@@ -1,4 +1,4 @@
-# Module PowrSync — Dolibarr
+# Module EklorSync — Dolibarr
 
 Synchronisation automatique des prix d'achat EKLOR dans Dolibarr.
 
