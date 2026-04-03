@@ -25,7 +25,7 @@ require '../../main.inc.php';
 require_once DOL_DOCUMENT_ROOT.'/core/class/html.form.class.php';
 require_once dol_buildpath('/powrsync/class/eklorscraper.class.php', 0);
 
-$langs->loadLangs(array('products', 'powrsync@powrsync'));
+$langs->loadLangs(array('products', 'eklorsync@powrsync'));
 
 if (!isModEnabled('powrsync')) {
 	accessforbidden();

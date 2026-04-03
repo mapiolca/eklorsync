@@ -1,0 +1,25 @@
+# Module EklorSync - Traducciones en español
+
+EklorSyncSupplierUrlLabel=URL del producto del proveedor
+EklorSyncSupplierUrlTooltip=Introduzca la URL de la ficha de producto en la tienda del proveedor
+EklorSyncDefaultVatRate=Tasa de IVA predeterminada
+EklorSyncDefaultVatRateHelp=Tasa de IVA (sin impuestos) aplicada en cada actualización del precio de compra del proveedor.
+EklorSyncDefaultVatRateRequired=El ajuste \"Tasa de IVA predeterminada\" es obligatorio. Configúrelo en la configuración de EklorSync.
+
+EklorSyncAboutPage=Información sobre el módulo EklorSync
+EklorSyncAboutGeneral=Información general
+EklorSyncAboutVersion=Versión
+EklorSyncAboutFamily=Familia
+EklorSyncAboutDescription=Descripción
+EklorSyncAboutMaintainer=Mantenedor
+EklorSyncAboutResources=Recursos
+EklorSyncAboutDocumentation=Documentación
+EklorSyncAboutSupport=Soporte
+EklorSyncAboutContact=Contacto
+EklorSyncAbout=Acerca de EklorSync
+EklorSyncAboutDocumentationLink=Leer el archivo README
+EklorSyncAboutSupportValue=Contacte con su integrador para obtener soporte.
+
+EklorSyncVisibleColumns=Columnas visibles
+EklorSyncRecordsPerPage=Registros por página
+EklorSyncSyncAllProducts=Sincronizar todos los productos

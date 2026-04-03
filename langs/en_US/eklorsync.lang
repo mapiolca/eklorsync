@@ -1,0 +1,73 @@
+# Module EklorSync - English translations
+
+EklorSyncSetup=EKLOR Setup
+EklorConnectCredentials=Login credentials
+EklorConnectEmail=EKLOR Email
+EklorConnectEmailHelp=Your login email for EKLOR.shop
+EklorConnectPassword=EKLOR Password
+EklorConnectPasswordHelp=Leave empty to keep current password
+EklorConnectMapping=Supplier mapping
+EklorConnectSupplier=Dolibarr Supplier
+EklorConnectSupplierHelp=Select the EKLOR supplier record in Dolibarr
+EklorSyncAdvanced=Advanced settings
+EklorSyncDelay=Delay between requests
+EklorSyncDelayHelp=Wait time between each product (500ms minimum to avoid overloading the site)
+EklorSyncDefaultVatRate=Default VAT rate
+EklorSyncDefaultVatRateHelp=VAT rate (excl. tax) applied on each supplier purchase price update.
+EklorSyncDefaultVatRateRequired=The "Default VAT rate" setting is required. Please configure it in EklorSync setup.
+EklorSyncConfigOk=Connected with account %s
+
+EklorSyncTestConnection=Connection test
+EklorSyncTestUrl=Test product URL
+EklorSyncTestUrlHelp=Paste a product URL from EKLOR.shop to verify the connection and price reading
+EklorSyncTestButton=Test connection
+
+EklorSyncTitle=EKLOR Price Sync
+EklorSyncNotConfigured=The EKLOR module is not yet configured.
+GoToSetup=Go to setup
+SyncAllPrices=Sync all prices
+EklorSyncConfirmAll=You are about to sync all EKLOR supplier prices. This may take several minutes. Continue?
+EklorSyncDone=%s product(s) processed
+EklorSyncUpdated=Price updated for %s (ref. %s)
+EklorSyncUpToDate=Price already up to date for %s
+EklorSyncNoProducts=No products with a EKLOR supplier reference found.
+EklorSyncProductCount=%s product(s) with EKLOR reference
+EklorSyncProductNotFound=Product not found in EKLOR list
+EklorSyncDbError=Database error
+
+EklorRef=EKLOR Ref.
+CurrentBuyPrice=Current buy price
+LastSyncPrice=Last scraped price
+LastSync=Last sync
+Sync=Sync
+Never=Never
+
+EklorSyncLog=Sync history
+OldPrice=Old price
+NewPrice=New price
+Variation=Variation
+
+EklorLogUpdated=Updated
+EklorLogUpToDate=Up to date
+EklorLogError=Error
+
+EklorSyncSupplierUrlLabel=Supplier product URL
+EklorSyncSupplierUrlTooltip=Enter the URL leading to the supplier shop product page
+
+EklorSyncAboutPage=Information about the EklorSync module
+EklorSyncAboutGeneral=General information
+EklorSyncAboutVersion=Version
+EklorSyncAboutFamily=Family
+EklorSyncAboutDescription=Description
+EklorSyncAboutMaintainer=Maintainer
+EklorSyncAboutResources=Resources
+EklorSyncAboutDocumentation=Documentation
+EklorSyncAboutSupport=Support
+EklorSyncAboutContact=Contact
+EklorSyncAbout=About EklorSync
+EklorSyncAboutDocumentationLink=Read the README file
+EklorSyncAboutSupportValue=Contact your integrator for support.
+
+EklorSyncVisibleColumns=Visible columns
+EklorSyncRecordsPerPage=Records per page
+EklorSyncSyncAllProducts=Synchronize all products

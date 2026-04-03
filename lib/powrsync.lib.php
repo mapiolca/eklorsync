@@ -34,7 +34,7 @@ function powrsyncAdminPrepareHead()
 	// $extrafields = new ExtraFields($db);
 	// $extrafields->fetch_name_optionals_label('myobject');
 
-	$langs->load("powrsync@powrsync");
+	$langs->load("eklorsync@powrsync");
 
 	$h = 0;
 	$head = array();
@@ -77,9 +77,9 @@ function powrsyncAdminPrepareHead()
 	//$this->tabs = array(
 	//	'entity:-tabname:Title:@powrsync:/powrsync/mypage.php?id=__ID__'
 	//); // to remove a tab
-	complete_head_from_modules($conf, $langs, null, $head, $h, 'powrsync@powrsync');
+	complete_head_from_modules($conf, $langs, null, $head, $h, 'eklorsync@powrsync');
 
-	complete_head_from_modules($conf, $langs, null, $head, $h, 'powrsync@powrsync', 'remove');
+	complete_head_from_modules($conf, $langs, null, $head, $h, 'eklorsync@powrsync', 'remove');
 
 	return $head;
 }

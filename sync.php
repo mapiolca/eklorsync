@@ -12,7 +12,7 @@ require_once DOL_DOCUMENT_ROOT.'/fourn/class/fournisseur.product.class.php';
 require_once dol_buildpath('/powrsync/class/eklorsync.class.php', 0);
 require_once dol_buildpath('/powrsync/class/eklorscraper.class.php', 0);
 
-$langs->loadLangs(array('products', 'suppliers', 'powrsync@powrsync'));
+$langs->loadLangs(array('products', 'suppliers', 'eklorsync@powrsync'));
 
 if (!isModEnabled('powrsync')) {
 	accessforbidden('Module PowrSync non activé');

@@ -1,4 +1,4 @@
-# Module EklorSync — Dolibarr
+# Module PowrSync — Dolibarr
 
 Synchronisation automatique des prix d'achat EKLOR dans Dolibarr.
 
@@ -21,7 +21,7 @@ Synchronisation automatique des prix d'achat EKLOR dans Dolibarr.
 
 Pour que la synchro fonctionne, chaque produit doit avoir :
 - **Un prix fournisseur EKLOR** avec la **référence EKLOR** renseignée dans `ref_fourn`
-  (ex: `VBLAEBATMS-7K-U`, `VODAEMI-1000`, etc.)
+  (ex: `OND0791`, `AR0794`, etc.)
 
 Chemin dans Dolibarr : Fiche produit → Onglet "Fournisseurs" → Prix fournisseur → Référence fournisseur
 
@@ -39,7 +39,7 @@ const PRODUCT_URL_PATTERN  = '/produit/%s';  // URL de la fiche produit
 ### Procédure de calibration
 
 1. Connectez-vous manuellement sur https://EKLOR.shop
-2. Ouvrez une fiche produit (ex: https://eklor.shop/produit/batterie-atmoce-m-elv-batterie-ms-7k-u/)
+2. Ouvrez une fiche produit (ex: https://EKLOR.shop/produit/OND0791)
 3. Clic droit sur le prix → "Inspecter"
 4. Notez la classe CSS ou la structure HTML du prix
 5. Adapter `PRICE_XPATH` et `PRODUCT_URL_PATTERN` en conséquence
@@ -87,11 +87,11 @@ powrsync/
 ├── sync.php                              ← Page principale (liste + actions)
 ├── sync_history.php                               ← Historique des synchros
 └── langs/
-    ├── fr_FR/powrsync.lang
-    └── en_US/powrsync.lang
-    └── es_ES/powrsync.lang
-    └── it_IT/powrsync.lang
-    └── de_DE/powrsync.lang
+    ├── fr_FR/eklorsync.lang
+    └── en_US/eklorsync.lang
+    └── es_ES/eklorsync.lang
+    └── it_IT/eklorsync.lang
+    └── de_DE/eklorsync.lang
 ```
 
 ## Journalisation

@@ -42,7 +42,7 @@ require_once '../lib/powrsync.lib.php';
 require_once DOL_DOCUMENT_ROOT.'/cron/class/cronjob.class.php';
 require_once DOL_DOCUMENT_ROOT.'/societe/class/societe.class.php';
 
-$langs->loadLangs(array('admin', 'powrsync@powrsync'));
+$langs->loadLangs(array('admin', 'eklorsync@powrsync'));
 
 if (!$user->admin) {
 	accessforbidden();
@@ -131,7 +131,7 @@ print load_fiche_titre($langs->trans($title), $linkback, 'title_setup');
 
 // Configuration header
 $head = powrsyncAdminPrepareHead();
-print dol_get_fiche_head($head, 'settings', $langs->trans($title), -1, 'powrsync@powrsync');
+print dol_get_fiche_head($head, 'settings', $langs->trans($title), -1, 'eklorsync@powrsync');
 
 // Récupérer la liste des fournisseurs pour le select
 $sql = "SELECT s.rowid, s.nom FROM ".MAIN_DB_PREFIX."societe s";

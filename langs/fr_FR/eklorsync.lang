@@ -1,0 +1,73 @@
+# Module EklorSync - Traductions françaises
+
+EklorSyncSetup=Configuration EKLOR
+EklorConnectCredentials=Identifiants de connexion
+EklorConnectEmail=Email EKLOR
+EklorConnectEmailHelp=Votre email de connexion au webshop EKLOR.shop
+EklorConnectPassword=Mot de passe EKLOR
+EklorConnectPasswordHelp=Laisser vide pour conserver le mot de passe actuel
+EklorConnectMapping=Association fournisseur
+EklorConnectSupplier=Fournisseur Dolibarr
+EklorConnectSupplierHelp=Sélectionner la fiche fournisseur EKLOR dans Dolibarr
+EklorSyncAdvanced=Paramètres avancés
+EklorSyncDelay=Délai entre requêtes
+EklorSyncDelayHelp=Temps d'attente entre chaque produit (500ms minimum pour ne pas surcharger le site)
+EklorSyncDefaultVatRate=Taux TVA par défaut
+EklorSyncDefaultVatRateHelp=Taux de TVA HT appliqué lors de chaque mise à jour de prix d'achat fournisseur.
+EklorSyncDefaultVatRateRequired=Le paramètre "Taux TVA par défaut" est obligatoire. Veuillez le renseigner dans la configuration EklorSync.
+EklorSyncConfigOk=Connecté avec le compte %s
+
+EklorSyncTestConnection=Test de connexion
+EklorSyncTestUrl=URL produit de test
+EklorSyncTestUrlHelp=Collez l'URL d'un produit sur EKLOR.shop pour vérifier la connexion et la lecture du prix
+EklorSyncTestButton=Tester la connexion
+
+EklorSyncTitle=Synchronisation prix EKLOR
+EklorSyncNotConfigured=Le module EKLOR n'est pas encore configuré.
+GoToSetup=Accéder à la configuration
+SyncAllPrices=Synchroniser tous les prix
+EklorSyncConfirmAll=Vous allez lancer la synchronisation de tous les prix fournisseur EKLOR. Cette opération peut prendre plusieurs minutes. Continuer ?
+EklorSyncDone=%s produit(s) traité(s)
+EklorSyncUpdated=Prix mis à jour pour %s (réf. %s)
+EklorSyncUpToDate=Prix déjà à jour pour %s
+EklorSyncNoProducts=Aucun produit avec une référence fournisseur EKLOR trouvé.
+EklorSyncProductCount=%s produit(s) avec référence EKLOR
+EklorSyncProductNotFound=Produit introuvable dans la liste EKLOR
+EklorSyncDbError=Erreur base de données
+
+EklorRef=Réf. EKLOR
+CurrentBuyPrice=Prix achat actuel
+LastSyncPrice=Dernier prix scrapé
+LastSync=Dernière synchro
+Sync=Synchroniser
+Never=Jamais
+
+EklorSyncLog=Historique des synchronisations
+OldPrice=Ancien prix
+NewPrice=Nouveau prix
+Variation=Variation
+
+EklorLogUpdated=Mis à jour
+EklorLogUpToDate=À jour
+EklorLogError=Erreur
+
+EklorSyncSupplierUrlLabel=URL produit fournisseur
+EklorSyncSupplierUrlTooltip=Saisir l'URL menant à la fiche produit du shop fournisseur
+
+EklorSyncAboutPage=Informations sur le module EklorSync
+EklorSyncAboutGeneral=Informations générales
+EklorSyncAboutVersion=Version
+EklorSyncAboutFamily=Famille
+EklorSyncAboutDescription=Description
+EklorSyncAboutMaintainer=Mainteneur
+EklorSyncAboutResources=Ressources
+EklorSyncAboutDocumentation=Documentation
+EklorSyncAboutSupport=Support
+EklorSyncAboutContact=Contact
+EklorSyncAbout=À propos de EklorSync
+EklorSyncAboutDocumentationLink=Lire le fichier README
+EklorSyncAboutSupportValue=Contactez votre intégrateur pour le support.
+
+EklorSyncVisibleColumns=Colonnes visibles
+EklorSyncRecordsPerPage=Enregistrements par page
+EklorSyncSyncAllProducts=Synchroniser tous les produits

@@ -254,7 +254,7 @@ class EklorSync extends CommonObject
 		$configuredVatRaw = getDolGlobalString('POWRSYNC_DEFAULT_VAT_RATE');
 		if (trim((string) $configuredVatRaw) === '') {
 			if (is_object($langs)) {
-				$langs->load('powrsync@powrsync');
+				$langs->load('eklorsync@powrsync');
 				$this->error = $langs->trans('PowrSyncDefaultVatRateRequired');
 			} else {
 				$this->error = 'POWRSYNC_DEFAULT_VAT_RATE is required';

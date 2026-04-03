@@ -100,7 +100,7 @@ class modEklorSync extends DolibarrModules
 			'mainmenu' => 'products',
 			'leftmenu' => 'powrsync',
 			'url'      => '/powrsync/sync.php',
-			'langs'    => 'powrsync@powrsync',
+			'langs'    => 'eklorsync@powrsync',
 			'position' => 900,
 			'enabled'  => 'isModEnabled("powrsync")',
 			'perms'    => '$user->hasRight("powrsync", "synclog", "read")',
@@ -115,7 +115,7 @@ class modEklorSync extends DolibarrModules
 			'mainmenu' => 'products',
 			'leftmenu' => 'powrsync_dashboard',
 			'url'      => '/powrsync/sync.php',
-			'langs'    => 'powrsync@powrsync',
+			'langs'    => 'eklorsync@powrsync',
 			'position' => 901,
 			'enabled'  => 'isModEnabled("powrsync")',
 			'perms'    => '$user->hasRight("powrsync", "synclog", "read")',
@@ -129,7 +129,7 @@ class modEklorSync extends DolibarrModules
 			'mainmenu' => 'products',
 			'leftmenu' => 'eklorsync_log',
 			'url'      => '/powrsync/sync_history.php',
-			'langs'    => 'powrsync@powrsync',
+			'langs'    => 'eklorsync@powrsync',
 			'position' => 902,
 			'enabled'  => 'isModEnabled("powrsync")',
 			'perms'    => '$user->hasRight("powrsync", "synclog", "read")',
@@ -192,7 +192,7 @@ class modEklorSync extends DolibarrModules
 				'PowrSyncSupplierUrlTooltip',         // help
 				'',                                   // computed
 				0,                                    // entity (all entities)
-				'powrsync@powrsync'                   // langfile
+				'eklorsync@powrsync'                   // langfile
 			);
 		}
 

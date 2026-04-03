@@ -25,7 +25,7 @@ dol_include_once('/powrsync/core/modules/modEklorSync.class.php');
 
 // EN: Load admin and module translations for the about page.
 // FR: Charge les traductions d'administration et du module pour la page À propos.
-$langs->loadLangs(array('admin', 'powrsync@powrsync'));
+$langs->loadLangs(array('admin', 'eklorsync@powrsync'));
 
 // EN: Only Dolibarr administrators can display the about page.
 // FR: Seuls les administrateurs Dolibarr peuvent afficher la page À propos.

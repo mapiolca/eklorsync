@@ -1,0 +1,25 @@
+# Module EklorSync - Deutsche Übersetzungen
+
+EklorSyncSupplierUrlLabel=URL des Lieferantenprodukts
+EklorSyncSupplierUrlTooltip=Geben Sie die URL zur Produktseite im Lieferanten-Shop ein
+EklorSyncDefaultVatRate=Standard-Mehrwertsteuersatz
+EklorSyncDefaultVatRateHelp=Mehrwertsteuersatz (netto), der bei jeder Aktualisierung des Lieferanten-Einkaufspreises angewendet wird.
+EklorSyncDefaultVatRateRequired=Die Einstellung „Standard-Mehrwertsteuersatz“ ist erforderlich. Bitte in der EklorSync-Konfiguration ausfüllen.
+
+EklorSyncAboutPage=Informationen über das EklorSync-Modul
+EklorSyncAboutGeneral=Allgemeine Informationen
+EklorSyncAboutVersion=Version
+EklorSyncAboutFamily=Familie
+EklorSyncAboutDescription=Beschreibung
+EklorSyncAboutMaintainer=Betreuer
+EklorSyncAboutResources=Ressourcen
+EklorSyncAboutDocumentation=Dokumentation
+EklorSyncAboutSupport=Support
+EklorSyncAboutContact=Kontakt
+EklorSyncAbout=Über EklorSync
+EklorSyncAboutDocumentationLink=README-Datei lesen
+EklorSyncAboutSupportValue=Kontaktieren Sie Ihren Integrator für den Support.
+
+EklorSyncVisibleColumns=Sichtbare Spalten
+EklorSyncRecordsPerPage=Einträge pro Seite
+EklorSyncSyncAllProducts=Alle Produkte synchronisieren
