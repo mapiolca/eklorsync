@@ -1,14 +1,14 @@
 # Module PowrSync - Traductions françaises
 
-PowrSyncSetup=Configuration POwR Connect
+PowrSyncSetup=Configuration EKLOR
 PowrConnectCredentials=Identifiants de connexion
-PowrConnectEmail=Email POwR Connect
-PowrConnectEmailHelp=Votre email de connexion au webshop powr-connect.shop
-PowrConnectPassword=Mot de passe POwR Connect
+PowrConnectEmail=Email EKLOR
+PowrConnectEmailHelp=Votre email de connexion au webshop EKLOR.shop
+PowrConnectPassword=Mot de passe EKLOR
 PowrConnectPasswordHelp=Laisser vide pour conserver le mot de passe actuel
 PowrConnectMapping=Association fournisseur
 PowrConnectSupplier=Fournisseur Dolibarr
-PowrConnectSupplierHelp=Sélectionner la fiche fournisseur POwR Connect dans Dolibarr
+PowrConnectSupplierHelp=Sélectionner la fiche fournisseur EKLOR dans Dolibarr
 PowrSyncAdvanced=Paramètres avancés
 PowrSyncDelay=Délai entre requêtes
 PowrSyncDelayHelp=Temps d'attente entre chaque produit (500ms minimum pour ne pas surcharger le site)
@@ -19,23 +19,23 @@ PowrSyncConfigOk=Connecté avec le compte %s
 
 PowrSyncTestConnection=Test de connexion
 PowrSyncTestUrl=URL produit de test
-PowrSyncTestUrlHelp=Collez l'URL d'un produit sur powr-connect.shop pour vérifier la connexion et la lecture du prix
+PowrSyncTestUrlHelp=Collez l'URL d'un produit sur EKLOR.shop pour vérifier la connexion et la lecture du prix
 PowrSyncTestButton=Tester la connexion
 
-PowrSyncTitle=Synchronisation prix POwR Connect
-PowrSyncNotConfigured=Le module POwR Connect n'est pas encore configuré.
+PowrSyncTitle=Synchronisation prix EKLOR
+PowrSyncNotConfigured=Le module EKLOR n'est pas encore configuré.
 GoToSetup=Accéder à la configuration
 SyncAllPrices=Synchroniser tous les prix
-PowrSyncConfirmAll=Vous allez lancer la synchronisation de tous les prix fournisseur POwR Connect. Cette opération peut prendre plusieurs minutes. Continuer ?
+PowrSyncConfirmAll=Vous allez lancer la synchronisation de tous les prix fournisseur EKLOR. Cette opération peut prendre plusieurs minutes. Continuer ?
 PowrSyncDone=%s produit(s) traité(s)
 PowrSyncUpdated=Prix mis à jour pour %s (réf. %s)
 PowrSyncUpToDate=Prix déjà à jour pour %s
-PowrSyncNoProducts=Aucun produit avec une référence fournisseur POwR Connect trouvé.
-PowrSyncProductCount=%s produit(s) avec référence POwR Connect
-PowrSyncProductNotFound=Produit introuvable dans la liste POwR Connect
+PowrSyncNoProducts=Aucun produit avec une référence fournisseur EKLOR trouvé.
+PowrSyncProductCount=%s produit(s) avec référence EKLOR
+PowrSyncProductNotFound=Produit introuvable dans la liste EKLOR
 PowrSyncDbError=Erreur base de données
 
-PowrRef=Réf. POwR Connect
+PowrRef=Réf. EKLOR
 CurrentBuyPrice=Prix achat actuel
 LastSyncPrice=Dernier prix scrapé
 LastSync=Dernière synchro

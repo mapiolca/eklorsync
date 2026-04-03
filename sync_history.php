@@ -23,7 +23,7 @@
 
 require '../../main.inc.php';
 require_once DOL_DOCUMENT_ROOT.'/core/class/html.form.class.php';
-require_once dol_buildpath('/powrsync/class/powrconnectscraper.class.php', 0);
+require_once dol_buildpath('/powrsync/class/eklorscraper.class.php', 0);
 
 $langs->loadLangs(array('products', 'powrsync@powrsync'));
 
@@ -65,7 +65,7 @@ if (!in_array($sortfield, $allowedSortFields, true)) {
 $sortorder = (strtoupper($sortorder) === 'ASC') ? 'ASC' : 'DESC';
 
 $availableColumns = array();
-$rescol = $db->query("SHOW COLUMNS FROM ".MAIN_DB_PREFIX."powrsync_log");
+$rescol = $db->query("SHOW COLUMNS FROM ".MAIN_DB_PREFIX."eklorsync_log");
 if ($rescol) {
 	while ($objcol = $db->fetch_object($rescol)) {
 		$availableColumns[$objcol->Field] = true;
@@ -125,7 +125,7 @@ if ($hasRefFournColumn) {
 }
 $sqlselect .= ", ".$supplierUrlSelect." AS supplier_url";
 
-$sqlfrom = " FROM ".MAIN_DB_PREFIX."powrsync_log AS l";
+$sqlfrom = " FROM ".MAIN_DB_PREFIX."eklorsync_log AS l";
 $sqlfrom .= " LEFT JOIN ".MAIN_DB_PREFIX."product AS p ON p.rowid = l.fk_product";
 $sqlwhere = " WHERE 1 = 1";
 if ($hasEntityColumn) {
@@ -135,12 +135,12 @@ if ($search_ref_fourn !== '' && $hasRefFournColumn) {
 	$sqlwhere .= " AND l.ref_fourn LIKE '%".$db->escape($search_ref_fourn)."%'";
 }
 if ($search_status !== '') {
-	if ((int) $search_status === PowrConnectScraper::LOG_OK) {
-		$sqlwhere .= " AND (l.status IN (".PowrConnectScraper::LOG_OK.", 'updated', 'ok', 'success'))";
-	} elseif ((int) $search_status === PowrConnectScraper::LOG_UPTODATE) {
-		$sqlwhere .= " AND (l.status IN (".PowrConnectScraper::LOG_UPTODATE.", 'unchanged', 'uptodate'))";
-	} elseif ((int) $search_status === PowrConnectScraper::LOG_ERROR) {
-		$sqlwhere .= " AND (l.status IN (".PowrConnectScraper::LOG_ERROR.", 'error', 'failed'))";
+	if ((int) $search_status === EklorScraper::LOG_OK) {
+		$sqlwhere .= " AND (l.status IN (".EklorScraper::LOG_OK.", 'updated', 'ok', 'success'))";
+	} elseif ((int) $search_status === EklorScraper::LOG_UPTODATE) {
+		$sqlwhere .= " AND (l.status IN (".EklorScraper::LOG_UPTODATE.", 'unchanged', 'uptodate'))";
+	} elseif ((int) $search_status === EklorScraper::LOG_ERROR) {
+		$sqlwhere .= " AND (l.status IN (".EklorScraper::LOG_ERROR.", 'error', 'failed'))";
 	}
 }
 
@@ -225,9 +225,9 @@ if (!empty($arrayfields['status']['checked'])) {
 	print '<td class="center">';
 	print $form->selectarray('search_status', array(
 		'' => $langs->trans('All'),
-		PowrConnectScraper::LOG_OK => $langs->trans('PowrLogUpdated'),
-		PowrConnectScraper::LOG_UPTODATE => $langs->trans('PowrLogUpToDate'),
-		PowrConnectScraper::LOG_ERROR => $langs->trans('PowrLogError'),
+		EklorScraper::LOG_OK => $langs->trans('PowrLogUpdated'),
+		EklorScraper::LOG_UPTODATE => $langs->trans('PowrLogUpToDate'),
+		EklorScraper::LOG_ERROR => $langs->trans('PowrLogError'),
 	), $search_status, 0, 0, 0, '', 0, 0, 0, '', 'maxwidth150');
 	print '</td>';
 }
@@ -273,9 +273,9 @@ if ($resql) {
 		$statusNum = is_numeric($obj->status) ? (int) $obj->status : null;
 
 		$badge = '<span class="badge badge-status8">'.$langs->trans('PowrLogError').'</span>';
-		if ($statusNum === PowrConnectScraper::LOG_OK || in_array($statusRaw, array('updated', 'ok', 'success'), true)) {
+		if ($statusNum === EklorScraper::LOG_OK || in_array($statusRaw, array('updated', 'ok', 'success'), true)) {
 			$badge = '<span class="badge badge-status4">'.$langs->trans('PowrLogUpdated').'</span>';
-		} elseif ($statusNum === PowrConnectScraper::LOG_UPTODATE || in_array($statusRaw, array('unchanged', 'uptodate'), true)) {
+		} elseif ($statusNum === EklorScraper::LOG_UPTODATE || in_array($statusRaw, array('unchanged', 'uptodate'), true)) {
 			$badge = '<span class="badge badge-status1">'.$langs->trans('PowrLogUpToDate').'</span>';
 		}
 

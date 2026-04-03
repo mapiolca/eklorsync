@@ -21,7 +21,7 @@ if (!$res) {
 
 require_once DOL_DOCUMENT_ROOT.'/core/lib/admin.lib.php';
 dol_include_once('/powrsync/lib/powrsync.lib.php');
-dol_include_once('/powrsync/core/modules/modPowrSync.class.php');
+dol_include_once('/powrsync/core/modules/modEklorSync.class.php');
 
 // EN: Load admin and module translations for the about page.
 // FR: Charge les traductions d'administration et du module pour la page À propos.
@@ -29,11 +29,11 @@ $langs->loadLangs(array('admin', 'powrsync@powrsync'));
 
 // EN: Only Dolibarr administrators can display the about page.
 // FR: Seuls les administrateurs Dolibarr peuvent afficher la page À propos.
-if (empty($user->admin)) {
-        accessforbidden();
-}
+	if (empty($user->admin)) {
+		accessforbidden();
+	}
 
-$moduleDescriptor = new modPowrSync($db);
+$moduleDescriptor = new modEklorSync($db);
 $title = $langs->trans('PowrSyncAbout');
 $helpurl = '';
 

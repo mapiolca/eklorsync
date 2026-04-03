@@ -64,9 +64,9 @@ if ($action == 'testconnect') {
 	} elseif (empty($testUrl) || !filter_var($testUrl, FILTER_VALIDATE_URL)) {
 		setEventMessages('Veuillez saisir une URL de produit valide pour le test.', null, 'errors');
 	} else {
-		require_once __DIR__.'/../class/powrconnectscraper.class.php';
+		require_once __DIR__.'/../class/eklorscraper.class.php';
 		$tempDir = !empty($conf->powrsync->dir_temp) ? $conf->powrsync->dir_temp : sys_get_temp_dir();
-		$scraper = new PowrConnectScraper($tempDir);
+		$scraper = new EklorScraper($tempDir);
 
 		$password = dol_decode($passEnc);
 		$price = $scraper->testConnectionAndGetPrice($login, $password, $testUrl, 'TEST');
@@ -184,7 +184,7 @@ print '<tr class="liste_titre">';
 print '<td colspan="3">'.$langs->trans('PowrConnectMapping').'</td>';
 print '</tr>';
 
-// Fournisseur Dolibarr correspondant à POwR Connect
+// Fournisseur Dolibarr correspondant à EKLOR
 print '<tr class="oddeven">';
 print '<td>'.$langs->trans('PowrConnectSupplier').'<span class="fieldrequired"> *</span></td>';
 print '<td>';
@@ -244,7 +244,7 @@ if ($hasPassword && !empty($currentLogin)) {
 	print '<tr class="oddeven">';
 	print '<td class="titlefield">'.$langs->trans('PowrSyncTestUrl').'</td>';
 	print '<td>';
-	print '<input type="url" name="POWRSYNC_TEST_URL" class="minwidth400" value="'.dol_escape_htmltag(GETPOST('POWRSYNC_TEST_URL', 'alpha')).'" placeholder="https://powr-connect.shop/produit/...">';
+	print '<input type="url" name="POWRSYNC_TEST_URL" class="minwidth400" value="'.dol_escape_htmltag(GETPOST('POWRSYNC_TEST_URL', 'alpha')).'" placeholder="https://EKLOR.shop/produit/...">';
 	print '</td>';
 	print '<td class="opacitymedium">'.$langs->trans('PowrSyncTestUrlHelp').'</td>';
 	print '</tr>';
