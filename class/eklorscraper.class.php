@@ -494,33 +494,30 @@ class EklorScraper
 	/**
 	 * Parse le prix HT dans le HTML de la fiche produit EKLOR
 	 *
-	 * Le prix se trouve dans un bloc avec la classe "font-semibold leading-none"
-	 * à l'intérieur d'un conteneur "bg-secondary-100" (promo) ou "bg-grey-50" (normal).
-	 * Format typique : <p class="text-[15px] font-semibold leading-none">661,38&nbsp;€</p>
+	 * Nouvelle structure (WooCommerce) :
+	 * <span class="woocommerce-Price-amount amount"><bdi>3 651,89&nbsp;<span class="woocommerce-Price-currencySymbol">€</span></bdi></span>
+	 * Le prix est aussi disponible dans la meta og : <meta property="product:price:amount" content="3651.894925">
+	 * Et dans le JSON-LD @graph : offers[].priceSpecification[].price
 	 */
 	private function parsePrice($html, $eklorRef)
 	{
 		$this->debug('parsePrice() — ref='.$eklorRef.', HTML length='.strlen($html).' bytes');
 
-		// Stratégie 1 : regex directe sur le pattern de prix affiché
-		// Cherche le prix dans le bloc "À l'unité" (premier prix font-semibold leading-none suivi de €)
-		$this->debug('Stratégie 1 : regex font-semibold leading-none + €');
-		if (preg_match_all('/font-semibold leading-none["\'][^>]*>([0-9\s\xc2\xa0.,]+)\s*(?:&nbsp;)?€/u', $html, $matches)) {
-			$this->debug('Regex S1 : '.count($matches[1]).' candidat(s) trouvé(s) : '.implode(' | ', $matches[1]));
-			foreach ($matches[1] as $rawPrice) {
-				$price = $this->cleanPrice($rawPrice.'€');
-				$this->debug('  → cleanPrice("'.trim($rawPrice).'") = '.var_export($price, true));
-				if ($price !== false && $price > 0) {
-					$this->debug('Stratégie 1 réussie : prix='.$price);
-					return $price;
-				}
+		// Stratégie 1 : meta tag product:price:amount (source la plus fiable)
+		$this->debug('Stratégie 1 : meta property="product:price:amount"');
+		if (preg_match('/<meta[^>]+property=["\']product:price:amount["\'][^>]+content=["\']([0-9.]+)["\']/', $html, $m)) {
+			$price = (float) $m[1];
+			$this->debug('Regex S1 : valeur brute="'.$m[1].'"');
+			if ($price > 0) {
+				$this->debug('Stratégie 1 réussie : prix='.$price);
+				return $price;
 			}
 		} else {
-			$this->debug('Stratégie 1 : aucun match (classe CSS absente ou HTML différent)');
+			$this->debug('Stratégie 1 : aucun match');
 		}
 
-		// Stratégie 2 : DOM/XPath fallback
-		$this->debug('Stratégie 2 : DOM/XPath sur font-semibold + leading-none');
+		// Stratégie 2 : DOM/XPath sur la section summary WooCommerce
+		$this->debug('Stratégie 2 : DOM/XPath sur woocommerce-Price-amount dans .entry-summary');
 		libxml_use_internal_errors(true);
 		$dom = new DOMDocument();
 		$dom->loadHTML($html, LIBXML_NOWARNING | LIBXML_NOERROR);
@@ -528,16 +525,22 @@ class EklorScraper
 
 		$xpath = new DOMXPath($dom);
 
-		// Cherche les éléments avec font-semibold et leading-none qui contiennent un prix
-		$priceNodes = $xpath->query('//*[contains(@class,"font-semibold") and contains(@class,"leading-none")]');
+		// Cherche le prix dans la section résumé produit (évite les prix des upsells)
+		$priceNodes = $xpath->query(
+			'//*[contains(@class,"entry-summary")]' .
+			'//*[contains(@class,"woocommerce-Price-amount")]//bdi' .
+			'|' .
+			'//*[contains(@class,"entry-summary")]' .
+			'//*[contains(@class,"woocommerce-Price-amount")]'
+		);
 		$nodeCount = $priceNodes ? $priceNodes->length : 0;
 		$this->debug('XPath S2 : '.$nodeCount.' nœud(s) trouvé(s)');
 		if ($priceNodes) {
 			foreach ($priceNodes as $node) {
 				$text = trim($node->textContent);
 				$this->debug('  nœud texte="'.$text.'"');
-				if (preg_match('/[0-9]/', $text) && mb_strpos($text, '€') !== false) {
-					$price = $this->cleanPrice($text);
+				if (preg_match('/[0-9]/', $text)) {
+					$price = $this->cleanPrice($text.'€');
 					$this->debug('  → cleanPrice = '.var_export($price, true));
 					if ($price !== false && $price > 0) {
 						$this->debug('Stratégie 2 réussie : prix='.$price);
@@ -547,15 +550,47 @@ class EklorScraper
 			}
 		}
 
-		// Stratégie 3 : JSON-LD schema.org (si le prix y est ajouté un jour)
+		// Stratégie 3 : JSON-LD schema.org (format @graph ou direct)
 		$this->debug('Stratégie 3 : JSON-LD schema.org');
 		foreach ($xpath->query('//script[@type="application/ld+json"]') as $script) {
 			$json = json_decode(trim($script->textContent), true);
-			$this->debug('  JSON-LD type='.($json['@type'] ?? '?').' — offers.price='.($json['offers']['price'] ?? 'absent'));
-			if (!empty($json['offers']['price'])) {
-				$price = (float) $json['offers']['price'];
-				$this->debug('Stratégie 3 réussie : prix='.$price);
-				return $price;
+			if (!is_array($json)) {
+				continue;
+			}
+			// Format nouveau : {"@graph": [..., {"@type":"Product", "offers":[...]}]}
+			$nodes = !empty($json['@graph']) ? $json['@graph'] : [$json];
+			foreach ($nodes as $node) {
+				if (($node['@type'] ?? '') !== 'Product') {
+					continue;
+				}
+				$this->debug('  JSON-LD Product trouvé');
+				$offers = $node['offers'] ?? [];
+				// offers peut être un tableau ou un objet
+				if (isset($offers['@type'])) {
+					$offers = [$offers];
+				}
+				foreach ($offers as $offer) {
+					// Format nouveau : priceSpecification[0].price
+					if (!empty($offer['priceSpecification'])) {
+						foreach ((array) $offer['priceSpecification'] as $spec) {
+							if (!empty($spec['price'])) {
+								$price = (float) $spec['price'];
+								if ($price > 0) {
+									$this->debug('Stratégie 3 réussie (priceSpecification) : prix='.$price);
+									return $price;
+								}
+							}
+						}
+					}
+					// Format ancien : offers.price
+					if (!empty($offer['price'])) {
+						$price = (float) $offer['price'];
+						if ($price > 0) {
+							$this->debug('Stratégie 3 réussie (offers.price) : prix='.$price);
+							return $price;
+						}
+					}
+				}
 			}
 		}
 
