@@ -61,7 +61,7 @@ class EklorScraper
 
 	/**
 	 * Vérifie si une session active existe déjà via le cookie jar.
-	 * Tente de charger une page et vérifie qu'on n'est pas redirigé vers /connexion.
+	 * Tente de charger la page profil WooCommerce et vérifie qu'on n'est pas redirigé vers la page login.
 	 */
 	public function isSessionActive()
 	{
@@ -72,23 +72,23 @@ class EklorScraper
 			return false;
 		}
 
-		// Vérifier que le cookie __session existe et n'est pas vide/expiré
+		// Vérifier qu'un cookie WordPress de session existe
 		$cookies = file_get_contents($this->cookieFile);
-		if (strpos($cookies, '__session') === false) {
-			$this->debug('Cookie __session absent du fichier — session inactive');
+		if (strpos($cookies, 'wordpress_logged_in_') === false) {
+			$this->debug('Cookie wordpress_logged_in_ absent du fichier — session inactive');
 			return false;
 		}
-		$this->debug('Cookie __session trouvé, test GET sur le site...');
+		$this->debug('Cookie wordpress_logged_in_ trouvé, test GET sur le site...');
 
 		$this->initCurl();
-		// Désactiver le suivi de redirection pour détecter un 302 vers /connexion
+		// Désactiver le suivi de redirection pour détecter un 302 vers la page login
 		curl_setopt($this->ch, CURLOPT_FOLLOWLOCATION, false);
-		curl_setopt($this->ch, CURLOPT_URL, $this->baseUrl.'/account/profile');
+		curl_setopt($this->ch, CURLOPT_URL, $this->baseUrl.'/mon-compte/profil/');
 		curl_setopt($this->ch, CURLOPT_HTTPGET, true);
 
 		curl_exec($this->ch);
 		$httpCode = curl_getinfo($this->ch, CURLINFO_HTTP_CODE);
-		$this->debug('GET /account/profile → HTTP '.$httpCode);
+		$this->debug('GET /mon-compte/profil/ → HTTP '.$httpCode);
 
 		// Restaurer le suivi de redirection
 		curl_setopt($this->ch, CURLOPT_FOLLOWLOCATION, true);
@@ -105,8 +105,8 @@ class EklorScraper
 	}
 
 	/**
-	 * Authentification via l'endpoint Remix de /connexion
-	 * Le CSRF est géré par cookie (posé par le GET, renvoyé automatiquement par le POST).
+	 * Authentification WooCommerce via /mon-compte/profil/
+	 * Le nonce WooCommerce est extrait dynamiquement du formulaire de connexion.
 	 * Retourne 1 si succès, -1 si échec
 	 */
 	public function login($email, $password)
@@ -122,57 +122,41 @@ class EklorScraper
 
 		$this->initCurl();
 
-		// Étape 1 : GET /connexion pour récupérer le cookie csrf + __session initiale
-		$loginUrl = $this->baseUrl.'/connexion';
-		$this->debug('GET '.$loginUrl.' (pour cookies csrf + __session)');
+		// Étape 1 : GET /mon-compte/profil/ pour récupérer le nonce WooCommerce
+		$loginUrl = $this->baseUrl.'/mon-compte/profil/';
+		$this->debug('GET '.$loginUrl.' (pour récupérer le nonce WooCommerce)');
 		curl_setopt($this->ch, CURLOPT_URL, $loginUrl);
 		curl_setopt($this->ch, CURLOPT_HTTPGET, true);
 		$html = curl_exec($this->ch);
 
 		if (curl_errno($this->ch)) {
 			$this->error = 'Connexion impossible : '.curl_error($this->ch);
-			$this->debug('ERREUR cURL GET /connexion : '.$this->error);
+			$this->debug('ERREUR cURL GET /mon-compte/profil/ : '.$this->error);
 			return -1;
 		}
-		$this->debug('GET /connexion OK, HTML length='.strlen($html).' bytes');
+		$this->debug('GET /mon-compte/profil/ OK, HTML length='.strlen($html).' bytes');
 
-		// Extraire la valeur du cookie csrf depuis le cookie jar
-		// Le CSRF utilise un double-submit pattern : la valeur doit être dans le cookie ET dans le body
-		$csrfValue = $this->extractCsrfFromCookieJar();
-		if (file_exists($this->cookieFile)) {
-			$cookieContent = file_get_contents($this->cookieFile);
-			$hasCsrf = strpos($cookieContent, 'csrf') !== false ? 'oui' : 'non';
-			$hasSession = strpos($cookieContent, '__session') !== false ? 'oui' : 'non';
-			$this->debug('Cookies après GET : csrf='.$hasCsrf.', __session='.$hasSession);
-		}
-		$this->debug('CSRF cookie value : '.($csrfValue ? substr($csrfValue, 0, 30).'…' : '(non trouvé)'));
-
-		// EN: Step 2, discover login form action + hidden fields to avoid hardcoded Remix route.
-		// FR: Étape 2, détecter l'action du formulaire + champs cachés pour éviter une route Remix figée.
+		// Étape 2 : extraire l'action du formulaire et les champs cachés (nonce WooCommerce, etc.)
 		$formConfig = $this->extractLoginFormConfig($html);
 		$formNotFound = empty($formConfig['action']) && empty($formConfig['hidden']);
 		if ($formNotFound) {
-			// EN: If no login form is present, session may already be authenticated.
-			// FR: Si le formulaire de connexion est absent, la session peut déjà être authentifiée.
-			$this->debug('No login form detected on /connexion, re-check active session before POST login');
+			// Si le formulaire de connexion est absent, la session peut déjà être active
+			$this->debug('Formulaire de connexion absent sur /mon-compte/profil/, vérification session...');
 			if ($this->isSessionActive()) {
-				$this->debug('Active session confirmed after /connexion GET, skip login POST');
+				$this->debug('Session confirmée, skip login POST');
 				$this->loginState = 'already_connected';
 				return 1;
 			}
-			// EN: If login form is absent, do not force a POST login (can trigger HTTP 500 upstream).
-			// FR: Si le formulaire est absent, ne pas forcer un POST login (peut déclencher un HTTP 500 côté fournisseur).
-			// EN: Continue flow and let product URL access confirm whether session is usable.
-			// FR: Continuer le flux et laisser l'accès URL produit confirmer si la session est exploitable.
 			$this->loggedIn = true;
 			$this->loginState = 'already_connected';
-			$this->debug('No login form and inactive /account/profile check: skip login POST, continue with product URL test');
+			$this->debug('Formulaire absent, session supposée active — continuation');
 			return 1;
 		}
 
+		// L'action du formulaire WooCommerce est vide (POST vers la même URL)
 		$postUrl = $formConfig['action'];
 		if (empty($postUrl)) {
-			$postUrl = $this->baseUrl.'/connexion';
+			$postUrl = $loginUrl;
 		}
 
 		$postFields = $formConfig['hidden'];
@@ -180,34 +164,22 @@ class EklorScraper
 			$postFields = array();
 		}
 
-		// EN: Always enforce required credentials fields.
-		// FR: Toujours forcer les champs d'identifiants requis.
-		$postFields['username'] = $email;
-		$postFields['password'] = $password;
-		if (!isset($postFields['stayConnected'])) {
-			$postFields['stayConnected'] = 'on';
-		}
-		if (!isset($postFields['_action']) || $postFields['_action'] === '') {
-			$postFields['_action'] = 'login';
-		}
-
-		// EN: If csrf is absent from form, fallback to cookie-derived value.
-		// FR: Si csrf est absent du formulaire, fallback via la valeur issue du cookie.
-		if (empty($postFields['csrf']) && !empty($csrfValue)) {
-			$postFields['csrf'] = $csrfValue;
-		}
+		// Champs d'identification WooCommerce
+		$postFields['username']   = $email;
+		$postFields['password']   = $password;
+		$postFields['rememberme'] = 'forever';
+		$postFields['login']      = 'Log in'; // valeur du bouton submit WooCommerce
 
 		usleep($this->requestDelay);
-		$this->debug('POST '.$postUrl.' avec username='.$email);
+		$this->debug('POST '.$postUrl.' avec username='.$email.', champs cachés='.count($formConfig['hidden']));
 
-		// Ne pas suivre les redirections pour capturer la réponse 204
+		// WooCommerce renvoie un 302 vers /mon-compte/ en cas de succès
 		curl_setopt($this->ch, CURLOPT_FOLLOWLOCATION, false);
 		curl_setopt($this->ch, CURLOPT_HEADER, true);
 		curl_setopt($this->ch, CURLOPT_HTTPHEADER, array(
 			'Content-Type: application/x-www-form-urlencoded',
 			'Origin: '.$this->baseUrl,
 			'Referer: '.$loginUrl,
-			'X-Requested-With: XMLHttpRequest',
 		));
 		curl_setopt_array($this->ch, array(
 			CURLOPT_URL        => $postUrl,
@@ -223,21 +195,6 @@ class EklorScraper
 		$this->debug('POST login → HTTP '.$httpCode);
 		$this->debug('Headers réponse (premières lignes) : '.substr(str_replace("\r\n", ' | ', $headers), 0, 500));
 
-		// EN: Retry once with raw csrf cookie value when server returns HTTP 500.
-		// FR: Refaire 1 tentative avec la valeur brute du cookie csrf si le serveur renvoie HTTP 500.
-		if ($httpCode >= 500 && !empty($this->lastCsrfRaw) && (!isset($postFields['csrf']) || $postFields['csrf'] !== $this->lastCsrfRaw)) {
-			$this->debug('Retry login POST with raw csrf cookie value');
-			$postFields['csrf'] = $this->lastCsrfRaw;
-			usleep($this->requestDelay);
-			curl_setopt($this->ch, CURLOPT_POSTFIELDS, http_build_query($postFields));
-			$response = curl_exec($this->ch);
-			$httpCode = curl_getinfo($this->ch, CURLINFO_HTTP_CODE);
-			$headerSize = curl_getinfo($this->ch, CURLINFO_HEADER_SIZE);
-			$headers = substr($response, 0, $headerSize);
-			$this->debug('POST login retry (csrf raw) → HTTP '.$httpCode);
-			$this->debug('Headers retry (premières lignes) : '.substr(str_replace("\r\n", ' | ', $headers), 0, 500));
-		}
-
 		// Restaurer les options par défaut
 		curl_setopt($this->ch, CURLOPT_FOLLOWLOCATION, true);
 		curl_setopt($this->ch, CURLOPT_HEADER, false);
@@ -249,14 +206,14 @@ class EklorScraper
 			return -1;
 		}
 
-		// Remix renvoie 204 No Content avec x-remix-redirect en cas de succès
-		if ($httpCode === 204 || ($httpCode >= 200 && $httpCode < 400)) {
-			// Vérifier que le cookie __session a été mis à jour avec des données réelles
+		// WooCommerce renvoie 302 vers /mon-compte/ en cas de succès
+		// Vérifier aussi la présence du cookie wordpress_logged_in_*
+		if ($httpCode === 302 || ($httpCode >= 200 && $httpCode < 400)) {
 			if (file_exists($this->cookieFile)) {
 				$cookieContent = file_get_contents($this->cookieFile);
-				$hasAuth = strpos($cookieContent, 'auth_token_sso') !== false;
-				$this->debug('Cookie auth_token_sso après login : '.($hasAuth ? 'oui' : 'non'));
-				if ($hasAuth || strpos($headers, 'x-remix-redirect') !== false) {
+				$hasAuth = strpos($cookieContent, 'wordpress_logged_in_') !== false;
+				$this->debug('Cookie wordpress_logged_in_ après login : '.($hasAuth ? 'oui' : 'non'));
+				if ($hasAuth) {
 					$this->loggedIn = true;
 					$this->loginState = 'login_ok';
 					$this->debug('Login réussi — session active');
@@ -406,9 +363,9 @@ class EklorScraper
 			$this->debug('ERREUR 404 pour '.$eklorRef);
 			return false;
 		}
-		if ($httpCode === 302 || strpos($finalUrl, '/connexion') !== false) {
+		if ($httpCode === 302 || strpos($finalUrl, '/mon-compte/profil') !== false) {
 			$this->error = 'Session expirée ou non connecté — redirigé vers '.$finalUrl;
-			$this->debug('ERREUR : redirection vers /connexion, session perdue');
+			$this->debug('ERREUR : redirection vers la page de connexion, session perdue');
 			return false;
 		}
 
