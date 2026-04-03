@@ -2,18 +2,18 @@
 /* Copyright (C) 2024 Votre Société — Licence GNU GPL v3 */
 
 /**
- * PowrConnectScraper
+ * EklorScraper
  *
- * Authentification sur powr-connect.shop + extraction des prix via cURL/DOM.
+ * Authentification sur EKLOR.shop + extraction des prix via cURL/DOM.
  * Vérifier les CGU avant usage. Respecter le délai entre requêtes.
  */
-class PowrConnectScraper
+class EklorScraper
 {
 	public const LOG_ERROR = -1;
 	public const LOG_OK = 1;
 	public const LOG_UPTODATE = 2;
 
-	private $baseUrl      = 'https://powr-connect.shop';
+	private $baseUrl      = 'https://EKLOR.shop';
 	private $cookieFile   = '';
 	private $ch           = null;
 	private $loggedIn     = false;
@@ -30,9 +30,9 @@ class PowrConnectScraper
 	private function debug($msg)
 	{
 		if (function_exists('dol_syslog')) {
-			dol_syslog('[PowrConnectScraper] '.$msg, LOG_DEBUG);
+			dol_syslog('[EklorScraper] '.$msg, LOG_DEBUG);
 		} else {
-			error_log('[PowrConnectScraper] '.$msg);
+			error_log('[EklorScraper] '.$msg);
 		}
 	}
 
@@ -492,7 +492,7 @@ class PowrConnectScraper
 	}
 
 	/**
-	 * Parse le prix HT dans le HTML de la fiche produit POwR Connect
+	 * Parse le prix HT dans le HTML de la fiche produit EKLOR
 	 *
 	 * Le prix se trouve dans un bloc avec la classe "font-semibold leading-none"
 	 * à l'intérieur d'un conteneur "bg-secondary-100" (promo) ou "bg-grey-50" (normal).
