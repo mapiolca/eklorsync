@@ -7,9 +7,9 @@ require_once DOL_DOCUMENT_ROOT.'/core/modules/DolibarrModules.class.php';
 
 /**
  * Descripteur du module PowrSync
- * Synchronisation des prix d'achat depuis POwR Connect
+ * Synchronisation des prix d'achat depuis EKLOR
  */
-class modPowrSync extends DolibarrModules
+class modEklorSync extends DolibarrModules
 {
 	public function __construct($db)
 	{
@@ -25,8 +25,8 @@ class modPowrSync extends DolibarrModules
 		$this->family         = 'Les Métiers du Bâtiment';
 		$this->module_position = '90';
 		$this->name           = preg_replace('/^mod/i', '', get_class($this));
-		$this->description    = "Synchronisation des prix d'achat depuis POwR Connect";
-		$this->descriptionlong = "Parcourt les produits Dolibarr ayant une référence fournisseur POwR Connect, ".
+		$this->description    = "Synchronisation des prix d'achat depuis EKLOR";
+		$this->descriptionlong = "Parcourt les produits Dolibarr ayant une référence fournisseur EKLOR, ".
 			"récupère les prix actuels par scraping authentifié et met à jour les prix d'achat si nécessaire.";
 		$this->editor_name    = 'Les Métiers du Bâtiment';
 		$this->editor_url     = 'https://lesmetiersdubatiment.fr';
@@ -34,7 +34,7 @@ class modPowrSync extends DolibarrModules
 
 		$this->version        = '1.0.2';
 		$this->const_name     = 'MAIN_MODULE_'.strtoupper($this->name);
-		$this->picto          = 'powrconnect@powrsync';
+		$this->picto          = 'eklor@powrsync';
 
 		$this->dirs = array("/powrsync/temp");
 
@@ -52,11 +52,11 @@ class modPowrSync extends DolibarrModules
 			0 => array(
 				'label'         => 'PowrSyncSyncAllProducts',
 				'jobtype'       => 'method',
-				'class'         => '/powrsync/class/powrsync.class.php',
-				'objectname'    => 'PowrSync',
+				'class'         => '/powrsync/class/eklorsync.class.php',
+				'objectname'    => 'EklorSync',
 				'method'        => 'syncAllProducts',
 				'parameters'    => '',
-				'comment'       => 'Synchronisation prix POwR Connect',
+				'comment'       => 'Synchronisation prix EKLOR',
 				'frequency'     => 24,
 				'unitfrequency' => 3600,
 				'status'        => 0,
@@ -69,21 +69,21 @@ class modPowrSync extends DolibarrModules
 		$r = 0;
 
 		$this->rights[$r][0] = $this->numero + $r + 1;
-		$this->rights[$r][1] = 'Consulter les logs de synchronisation POwR Connect';
+		$this->rights[$r][1] = 'Consulter les logs de synchronisation EKLOR';
 		$this->rights[$r][3] = 1;
 		$this->rights[$r][4] = 'synclog';
 		$this->rights[$r][5] = 'read';
 		$r++;
 
 		$this->rights[$r][0] = $this->numero + $r + 1;
-		$this->rights[$r][1] = 'Lancer une synchronisation POwR Connect';
+		$this->rights[$r][1] = 'Lancer une synchronisation EKLOR';
 		$this->rights[$r][3] = 0;
 		$this->rights[$r][4] = 'synclog';
 		$this->rights[$r][5] = 'write';
 		$r++;
 
 		$this->rights[$r][0] = $this->numero + $r + 1;
-		$this->rights[$r][1] = 'Configurer le module POwR Connect';
+		$this->rights[$r][1] = 'Configurer le module EKLOR';
 		$this->rights[$r][3] = 0;
 		$this->rights[$r][4] = 'config';
 		$this->rights[$r][5] = 'write';
@@ -95,8 +95,8 @@ class modPowrSync extends DolibarrModules
 		$this->menu[$r++] = array(
 			'fk_menu'  => 'fk_mainmenu=products',
 			'type'     => 'left',
-			'titre'    => 'POwR Connect Sync',
-			'prefix' => img_picto('', 'object_powrconnect@powrsync', 'class="pictofixedwidth valignmiddle"'),
+			'titre'    => 'EKLOR Sync',
+			'prefix' => img_picto('', 'object_eklor@powrsync', 'class="pictofixedwidth valignmiddle"'),
 			'mainmenu' => 'products',
 			'leftmenu' => 'powrsync',
 			'url'      => '/powrsync/sync.php',

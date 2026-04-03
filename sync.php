@@ -1,6 +1,6 @@
 <?php
 /* Copyright (C) 2024 - Module PowrSync
- * Page de synchronisation des prix POwR Connect
+ * Page de synchronisation des prix EKLOR
  */
 
 require '../../main.inc.php';
@@ -9,8 +9,8 @@ require_once DOL_DOCUMENT_ROOT.'/core/lib/product.lib.php';
 require_once DOL_DOCUMENT_ROOT.'/core/lib/tax.lib.php';
 require_once DOL_DOCUMENT_ROOT.'/product/class/product.class.php';
 require_once DOL_DOCUMENT_ROOT.'/fourn/class/fournisseur.product.class.php';
-require_once dol_buildpath('/powrsync/class/powrsync.class.php', 0);
-require_once dol_buildpath('/powrsync/class/powrconnectscraper.class.php', 0);
+require_once dol_buildpath('/powrsync/class/eklorsync.class.php', 0);
+require_once dol_buildpath('/powrsync/class/eklorscraper.class.php', 0);
 
 $langs->loadLangs(array('products', 'suppliers', 'powrsync@powrsync'));
 
@@ -31,7 +31,7 @@ $search_ref_product  = trim(GETPOST('search_ref_product', 'alphanohtml'));
 $search_ref_fourn    = trim(GETPOST('search_ref_fourn', 'alphanohtml'));
 
 $tempDir = !empty($conf->powrsync->dir_temp) ? $conf->powrsync->dir_temp : sys_get_temp_dir();
-$scraper = new PowrConnectScraper($tempDir);
+$scraper = new EklorScraper($tempDir);
 
 $fkSoc = getDolGlobalInt('POWRSYNC_SUPPLIER_ID');
 $email = getDolGlobalString('POWRSYNC_LOGIN');
@@ -170,10 +170,10 @@ if ($user->hasRight('powrsync', 'synclog', 'write')) {
 			while ($logObj = $db->fetch_object($resLogs)) {
 				$status = (int) $logObj->status;
 
-				if ($status == PowrConnectScraper::LOG_OK) {
+				if ($status == EklorScraper::LOG_OK) {
 					$badgeClass = 'badge badge-status4';
 					$badgeLabel = $langs->trans('PowrLogUpdated');
-				} elseif ($status == PowrConnectScraper::LOG_UPTODATE) {
+				} elseif ($status == EklorScraper::LOG_UPTODATE) {
 					$badgeClass = 'badge badge-status1';
 					$badgeLabel = $langs->trans('PowrLogUpToDate');
 				} else {
@@ -296,7 +296,7 @@ $total = 0;
 
 llxHeader('', $langs->trans('PowrSyncTitle'));
 
-$object = new PowrSync($db);
+$object = new EklorSync($db);
 
 print_barre_liste($langs->trans('PowrSyncTitle'), $page, $_SERVER['PHP_SELF'], $param, $sortfield, $sortorder, '', $total, $limit, $object->picto, 0, '', '', $limit);
 
@@ -360,7 +360,7 @@ if ($user->hasRight('powrsync', 'synclog', 'write')) {
 	}
 }
 
-// Liste des produits avec ref POwR Connect
+// Liste des produits avec ref EKLOR
 $products = getProductsWithPowrRef($db, $fkSoc, $sortfield, $sortorder, $search_ref_product, $search_ref_fourn);
 
 if ($products === false) {
@@ -417,11 +417,11 @@ if (empty($products)) {
 		$statusIcon  = '';
 
 		if ($log) {
-			if ($log['status'] == PowrConnectScraper::LOG_OK) {
+			if ($log['status'] == EklorScraper::LOG_OK) {
 				$statusClass = 'badge badge-status4';
 				$statusLabel = $langs->trans('PowrLogUpdated');
 				$statusIcon  = 'tick';
-			} elseif ($log['status'] == PowrConnectScraper::LOG_UPTODATE) {
+			} elseif ($log['status'] == EklorScraper::LOG_UPTODATE) {
 				$statusClass = 'badge badge-status1';
 				$statusLabel = $langs->trans('PowrLogUpToDate');
 				$statusIcon  = 'check';
@@ -443,7 +443,7 @@ if (empty($products)) {
 		// Label
 		print '<td>'.dol_escape_htmltag(dol_trunc($prod['label_product'], 50)).'</td>';
 
-		// Ref POwR
+		// Ref EKLOR
 		print '<td>';
 		if (!empty($prod['supplier_url'])) {
 			print '<a href="'.dol_escape_htmltag($prod['supplier_url']).'" target="_blank" rel="noopener">';
@@ -525,7 +525,7 @@ $db->close();
 // =========================================================================
 
 /**
- * Returns supplier product rows for POwR Connect sync.
+ * Returns supplier product rows for EKLOR sync.
  *
  * @param DoliDB $db
  * @param int    $fkSoc
@@ -614,7 +614,7 @@ function getProductsWithPowrRef($db, $fkSoc, $sortfield = 'p.ref', $sortorder = 
 }
 
 /**
- * Returns one supplier product row for POwR Connect sync.
+ * Returns one supplier product row for EKLOR sync.
  *
  * @param DoliDB $db
  * @param int    $fkSoc
@@ -720,10 +720,10 @@ function getSupplierDefaultVatRate($db, $supplierId)
 }
 
 /**
- * Synchronize one supplier product price with POwR Connect.
+ * Synchronize one supplier product price with EKLOR.
  *
  * @param DoliDB             $db
- * @param PowrConnectScraper $scraper
+ * @param EklorScraper $scraper
  * @param array              $productRow
  * @param int                $fkSoc
  * @param User               $user
@@ -742,19 +742,19 @@ function syncOneSupplierProductPrice($db, $scraper, $productRow, $fkSoc, $user, 
 
 	if (empty($url) || !filter_var($url, FILTER_VALIDATE_URL)) {
 		$scraper->error = 'URL fournisseur non valide pour '.$powrRef;
-		insertPowrSyncLog($db, $productRow, $user, PowrConnectScraper::LOG_ERROR, $currentPrice, null, $scraper->error);
+		insertPowrSyncLog($db, $productRow, $user, EklorScraper::LOG_ERROR, $currentPrice, null, $scraper->error);
 		return -1;
 	}
 
 	$newPrice = $scraper->testConnectionAndGetPrice($login, $password, $url, $powrRef);
 
 	if ($newPrice === false) {
-		insertPowrSyncLog($db, $productRow, $user, PowrConnectScraper::LOG_ERROR, $currentPrice, null, $scraper->error);
+		insertPowrSyncLog($db, $productRow, $user, EklorScraper::LOG_ERROR, $currentPrice, null, $scraper->error);
 		return -1;
 	}
 
 	if (abs($newPrice - $currentPrice) <= 0.001) {
-		insertPowrSyncLog($db, $productRow, $user, PowrConnectScraper::LOG_UPTODATE, $currentPrice, $newPrice, '');
+		insertPowrSyncLog($db, $productRow, $user, EklorScraper::LOG_UPTODATE, $currentPrice, $newPrice, '');
 		return 2;
 	}
 
@@ -765,7 +765,7 @@ function syncOneSupplierProductPrice($db, $scraper, $productRow, $fkSoc, $user, 
 
 	if ($vatTx === null) {
 		$scraper->error = $langs->trans('PowrSyncDefaultVatRateRequired');
-		insertPowrSyncLog($db, $productRow, $user, PowrConnectScraper::LOG_ERROR, $currentPrice, null, $scraper->error);
+		insertPowrSyncLog($db, $productRow, $user, EklorScraper::LOG_ERROR, $currentPrice, null, $scraper->error);
 		return -1;
 	}
 
@@ -808,18 +808,18 @@ function syncOneSupplierProductPrice($db, $scraper, $productRow, $fkSoc, $user, 
 
 	if ($res < 0) {
 		$scraper->error = !empty($productFournisseur->error) ? $productFournisseur->error : $db->lasterror();
-		insertPowrSyncLog($db, $productRow, $user, PowrConnectScraper::LOG_ERROR, $currentPrice, $newPrice, $scraper->error);
+		insertPowrSyncLog($db, $productRow, $user, EklorScraper::LOG_ERROR, $currentPrice, $newPrice, $scraper->error);
 		return -1;
 	}
 
 	$forceVatResult = forceSupplierPriceVatRate($db, $priceLineId, $productId, $fkSoc, $powrRef, $qty, $vatTx);
 	if ($forceVatResult < 0) {
 		$scraper->error = $db->lasterror();
-		insertPowrSyncLog($db, $productRow, $user, PowrConnectScraper::LOG_ERROR, $currentPrice, $newPrice, $scraper->error);
+		insertPowrSyncLog($db, $productRow, $user, EklorScraper::LOG_ERROR, $currentPrice, $newPrice, $scraper->error);
 		return -1;
 	}
 
-	insertPowrSyncLog($db, $productRow, $user, PowrConnectScraper::LOG_OK, $currentPrice, $newPrice, '');
+	insertPowrSyncLog($db, $productRow, $user, EklorScraper::LOG_OK, $currentPrice, $newPrice, '');
 	return 1;
 }
 

@@ -2,28 +2,28 @@
 /* Copyright (C) 2024 Votre Société — Licence GNU GPL v3 */
 
 require_once DOL_DOCUMENT_ROOT.'/core/class/commonobject.class.php';
-require_once DOL_DOCUMENT_ROOT.'/custom/powrsync/class/powrconnectscraper.class.php';
+require_once DOL_DOCUMENT_ROOT.'/custom/powrsync/class/eklorscraper.class.php';
 
 /**
  * PowrSync
  *
  * Orchestrateur : parcourt les produits Dolibarr ayant une ref fournisseur
- * POwR Connect, récupère les prix via le scraper, compare et met à jour.
+ * EKLOR, récupère les prix via le scraper, compare et met à jour.
  */
-class PowrSync extends CommonObject
+class EklorSync extends CommonObject
 {
 	public $element       = 'powrsync';
 	public $table_element = 'powrsync_log';
 	public $picto         = 'fa-sun';
 
 	/** Nom du fournisseur tel qu'enregistré dans Dolibarr (llx_societe.nom) */
-	private $supplierName = 'POwR Connect';
+	private $supplierName = 'EKLOR';
 
 	public $error  = '';
 	public $errors = array();
 	private $logColumns = null;
 
-	// Identifiant interne du fournisseur POwR Connect
+	// Identifiant interne du fournisseur EKLOR
 	private $supplierId = 0;
 
 	public function __construct(DoliDB $db)
@@ -34,10 +34,10 @@ class PowrSync extends CommonObject
 	// ─── Point d'entrée principal ───────────────────────────────────────────
 
 	/**
-	 * Synchronise tous les produits ayant une référence POwR Connect.
+	 * Synchronise tous les produits ayant une référence EKLOR.
 	 * Appelé par le cron ou manuellement.
 	 *
-	 * @param  string $email    Login POwR Connect (si vide, lit la constante)
+	 * @param  string $email    Login EKLOR (si vide, lit la constante)
 	 * @param  string $password Mot de passe (si vide, lit la constante)
 	 * @return int Nombre de prix mis à jour, ou -1 en cas d'erreur
 	 */
@@ -54,7 +54,7 @@ class PowrSync extends CommonObject
 		}
 
 		if (empty($email) || empty($password)) {
-			$this->error = 'Identifiants POwR Connect non configurés (Menu : Config > POwR Sync)';
+			$this->error = 'Identifiants EKLOR non configurés (Menu : Config > EKLOR Sync)';
 			dol_syslog('PowrSync: '.$this->error, LOG_WARNING);
 			return 1;
 		}
@@ -70,7 +70,7 @@ class PowrSync extends CommonObject
 			return 1;
 		}
 
-		// Récupérer les produits avec une ref POwR Connect
+		// Récupérer les produits avec une ref EKLOR
 		$products = $this->getProductsWithPowrRef();
 		if (empty($products)) {
 			$this->output = "PowrSync success: 0 product checked, 0 updated, 0 error";
@@ -79,12 +79,12 @@ class PowrSync extends CommonObject
 			return 0;
 		}
 
-		// Connexion au site POwR Connect
+		// Connexion au site EKLOR
 		$tempDir = $conf->powrsync->dir_temp ?: sys_get_temp_dir();
-		$scraper = new PowrConnectScraper($tempDir);
+		$scraper = new EklorScraper($tempDir);
 
 		if ($scraper->login($email, $password) < 0) {
-			$this->error = 'Connexion POwR Connect échouée : '.$scraper->error;
+			$this->error = 'Connexion EKLOR échouée : '.$scraper->error;
 			dol_syslog('PowrSync: '.$this->error, LOG_WARNING);
 			return 1;
 		}
@@ -112,11 +112,11 @@ class PowrSync extends CommonObject
 	/**
 	 * Synchronise le prix d'un produit
 	 *
-	 * @param  PowrConnectScraper $scraper
+	 * @param  EklorScraper $scraper
 	 * @param  array              $product  Données du produit (rowid, ref_fourn, buyprice, qty_min...)
 	 * @return int  1=mis à jour, 0=inchangé, -1=erreur
 	 */
-	private function syncOneProduct(PowrConnectScraper $scraper, array $product)
+	private function syncOneProduct(EklorScraper $scraper, array $product)
 	{
 		global $user;
 
@@ -170,7 +170,7 @@ class PowrSync extends CommonObject
 	// ─── Requêtes Dolibarr ─────────────────────────────────────────────────
 
 	/**
-	 * Retourne l'ID du fournisseur POwR Connect dans llx_societe
+	 * Retourne l'ID du fournisseur EKLOR dans llx_societe
 	 */
 	private function findSupplierId()
 	{
@@ -191,7 +191,7 @@ class PowrSync extends CommonObject
 	}
 
 	/**
-	 * Retourne la liste des produits ayant une ref fournisseur POwR Connect
+	 * Retourne la liste des produits ayant une ref fournisseur EKLOR
 	 * sous forme de tableau : product_id, ref_fourn, unit_price, qty_min_to_buy
 	 */
 	private function getProductsWithPowrRef()
@@ -390,11 +390,11 @@ class PowrSync extends CommonObject
 		$fields = array();
 		$values = array();
 		$statusMap = array(
-			'updated' => PowrConnectScraper::LOG_OK,
-			'unchanged' => PowrConnectScraper::LOG_UPTODATE,
-			'error' => PowrConnectScraper::LOG_ERROR,
+			'updated' => EklorScraper::LOG_OK,
+			'unchanged' => EklorScraper::LOG_UPTODATE,
+			'error' => EklorScraper::LOG_ERROR,
 		);
-		$numericStatus = isset($statusMap[$status]) ? (int) $statusMap[$status] : PowrConnectScraper::LOG_ERROR;
+		$numericStatus = isset($statusMap[$status]) ? (int) $statusMap[$status] : EklorScraper::LOG_ERROR;
 
 		if (!empty($columns['fk_product'])) {
 			$fields[] = 'fk_product';
