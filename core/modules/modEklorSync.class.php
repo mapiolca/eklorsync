@@ -6,7 +6,7 @@
 require_once DOL_DOCUMENT_ROOT.'/core/modules/DolibarrModules.class.php';
 
 /**
- * Descripteur du module PowrSync
+ * Descripteur du module EklorSync
  * Synchronisation des prix d'achat depuis EKLOR
  */
 class modEklorSync extends DolibarrModules
@@ -21,7 +21,7 @@ class modEklorSync extends DolibarrModules
 		// ID unique — à réserver sur https://wiki.dolibarr.org/index.php/List_of_modules_id
 		$this->numero = 450013;
 
-		$this->rights_class   = 'powrsync';
+		$this->rights_class   = 'eklorsync';
 		$this->family         = 'Les Métiers du Bâtiment';
 		$this->module_position = '90';
 		$this->name           = preg_replace('/^mod/i', '', get_class($this));
@@ -30,15 +30,15 @@ class modEklorSync extends DolibarrModules
 			"récupère les prix actuels par scraping authentifié et met à jour les prix d'achat si nécessaire.";
 		$this->editor_name    = 'Les Métiers du Bâtiment';
 		$this->editor_url     = 'https://lesmetiersdubatiment.fr';
-		$this->editor_squarred_logo = 'lesmetiersdubatiment.png@powrsync';					// Must be image filename into the module/img directory followed with @modulename. Example: 'myimage.png@powrsync'
+		$this->editor_squarred_logo = 'lesmetiersdubatiment.png@eklorsync';					// Must be image filename into the module/img directory followed with @modulename. Example: 'myimage.png@eklorsync'
 
 		$this->version        = '1.0.2';
 		$this->const_name     = 'MAIN_MODULE_'.strtoupper($this->name);
-		$this->picto          = 'eklor@powrsync';
+		$this->picto          = 'eklor@eklorsync';
 
-		$this->dirs = array("/powrsync/temp");
+		$this->dirs = array("/eklorsync/temp");
 
-		$this->config_page_url = array("setup.php@powrsync");
+		$this->config_page_url = array("setup.php@eklorsync");
 
 		$this->depends    = array('modProduct', 'modFournisseur');
 		$this->requiredby = array();
@@ -50,9 +50,9 @@ class modEklorSync extends DolibarrModules
 		// Cron job automatique (toutes les 24h)
 		$this->cronjobs = array(
 			0 => array(
-				'label'         => 'PowrSyncSyncAllProducts',
+				'label'         => 'EklorSyncSyncAllProducts',
 				'jobtype'       => 'method',
-				'class'         => '/powrsync/class/eklorsync.class.php',
+				'class'         => '/eklorsync/class/eklorsync.class.php',
 				'objectname'    => 'EklorSync',
 				'method'        => 'syncAllProducts',
 				'parameters'    => '',
@@ -60,7 +60,7 @@ class modEklorSync extends DolibarrModules
 				'frequency'     => 24,
 				'unitfrequency' => 3600,
 				'status'        => 0,
-				'test'          => 'isModEnabled("powrsync")',
+				'test'          => 'isModEnabled("eklorsync")',
 			),
 		);
 
@@ -96,14 +96,14 @@ class modEklorSync extends DolibarrModules
 			'fk_menu'  => 'fk_mainmenu=products',
 			'type'     => 'left',
 			'titre'    => 'EKLOR Sync',
-			'prefix' => img_picto('', 'object_eklor@powrsync', 'class="pictofixedwidth valignmiddle"'),
+			'prefix' => img_picto('', 'object_eklor@eklorsync', 'class="pictofixedwidth valignmiddle"'),
 			'mainmenu' => 'products',
 			'leftmenu' => 'eklorsync',
-			'url'      => '/powrsync/sync.php',
-			'langs'    => 'eklorsync@powrsync',
+			'url'      => '/eklorsync/sync.php',
+			'langs'    => 'eklorsync@eklorsync',
 			'position' => 910,
-			'enabled'  => 'isModEnabled("powrsync")',
-			'perms'    => '$user->hasRight("powrsync", "synclog", "read")',
+			'enabled'  => 'isModEnabled("eklorsync")',
+			'perms'    => '$user->hasRight("eklorsync", "synclog", "read")',
 			'target'   => '',
 			'user'     => 2,
 		);
@@ -113,12 +113,12 @@ class modEklorSync extends DolibarrModules
 			'type'     => 'left',
 			'titre'    => 'Tableau de bord',
 			'mainmenu' => 'products',
-			'leftmenu' => 'powrsync_dashboard',
-			'url'      => '/powrsync/sync.php',
-			'langs'    => 'eklorsync@powrsync',
+			'leftmenu' => 'eklorsync_dashboard',
+			'url'      => '/eklorsync/sync.php',
+			'langs'    => 'eklorsync@eklorsync',
 			'position' => 901,
-			'enabled'  => 'isModEnabled("powrsync")',
-			'perms'    => '$user->hasRight("powrsync", "synclog", "read")',
+			'enabled'  => 'isModEnabled("eklorsync")',
+			'perms'    => '$user->hasRight("eklorsync", "synclog", "read")',
 			'user'     => 2,
 		);
 
@@ -128,11 +128,11 @@ class modEklorSync extends DolibarrModules
 			'titre'    => 'Historique des syncs',
 			'mainmenu' => 'products',
 			'leftmenu' => 'eklorsync_log',
-			'url'      => '/powrsync/sync_history.php',
-			'langs'    => 'eklorsync@powrsync',
+			'url'      => '/eklorsync/sync_history.php',
+			'langs'    => 'eklorsync@eklorsync',
 			'position' => 902,
-			'enabled'  => 'isModEnabled("powrsync")',
-			'perms'    => '$user->hasRight("powrsync", "synclog", "read")',
+			'enabled'  => 'isModEnabled("eklorsync")',
+			'perms'    => '$user->hasRight("eklorsync", "synclog", "read")',
 			'user'     => 2,
 		);
 	}
@@ -177,7 +177,7 @@ class modEklorSync extends DolibarrModules
 		if (!isset($existing['supplier_url'])) {
 			$extrafields->addExtraField(
 				'supplier_url',                     // attrname
-				'PowrSyncSupplierUrlLabel',         // label
+				'EklorSyncSupplierUrlLabel',         // label
 				'url',                               // type
 				100,                                  // pos
 				'',                                   // size
@@ -189,10 +189,10 @@ class modEklorSync extends DolibarrModules
 				1,                                    // alwayseditable
 				'',                                   // perms
 				1,                                    // list
-				'PowrSyncSupplierUrlTooltip',         // help
+				'EklorSyncSupplierUrlTooltip',         // help
 				'',                                   // computed
 				0,                                    // entity (all entities)
-				'eklorsync@powrsync'                   // langfile
+				'eklorsync@eklorsync'                   // langfile
 			);
 		}
 

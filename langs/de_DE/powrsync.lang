@@ -1,25 +1,25 @@
-# Module PowrSync - Deutsche Übersetzungen
+# Module EklorSync - Deutsche Übersetzungen
 
-PowrSyncSupplierUrlLabel=URL des Lieferantenprodukts
-PowrSyncSupplierUrlTooltip=Geben Sie die URL zur Produktseite im Lieferanten-Shop ein
-PowrSyncDefaultVatRate=Standard-Mehrwertsteuersatz
-PowrSyncDefaultVatRateHelp=Mehrwertsteuersatz (netto), der bei jeder Aktualisierung des Lieferanten-Einkaufspreises angewendet wird.
-PowrSyncDefaultVatRateRequired=Die Einstellung „Standard-Mehrwertsteuersatz“ ist erforderlich. Bitte in der PowrSync-Konfiguration ausfüllen.
+EklorSyncSupplierUrlLabel=URL des Lieferantenprodukts
+EklorSyncSupplierUrlTooltip=Geben Sie die URL zur Produktseite im Lieferanten-Shop ein
+EklorSyncDefaultVatRate=Standard-Mehrwertsteuersatz
+EklorSyncDefaultVatRateHelp=Mehrwertsteuersatz (netto), der bei jeder Aktualisierung des Lieferanten-Einkaufspreises angewendet wird.
+EklorSyncDefaultVatRateRequired=Die Einstellung „Standard-Mehrwertsteuersatz“ ist erforderlich. Bitte in der EklorSync-Konfiguration ausfüllen.
 
-PowrSyncAboutPage=Informationen über das PowrSync-Modul
-PowrSyncAboutGeneral=Allgemeine Informationen
-PowrSyncAboutVersion=Version
-PowrSyncAboutFamily=Familie
-PowrSyncAboutDescription=Beschreibung
-PowrSyncAboutMaintainer=Betreuer
-PowrSyncAboutResources=Ressourcen
-PowrSyncAboutDocumentation=Dokumentation
-PowrSyncAboutSupport=Support
-PowrSyncAboutContact=Kontakt
-PowrSyncAbout=Über PowrSync
-PowrSyncAboutDocumentationLink=README-Datei lesen
-PowrSyncAboutSupportValue=Kontaktieren Sie Ihren Integrator für den Support.
+EklorSyncAboutPage=Informationen über das EklorSync-Modul
+EklorSyncAboutGeneral=Allgemeine Informationen
+EklorSyncAboutVersion=Version
+EklorSyncAboutFamily=Familie
+EklorSyncAboutDescription=Beschreibung
+EklorSyncAboutMaintainer=Betreuer
+EklorSyncAboutResources=Ressourcen
+EklorSyncAboutDocumentation=Dokumentation
+EklorSyncAboutSupport=Support
+EklorSyncAboutContact=Kontakt
+EklorSyncAbout=Über EklorSync
+EklorSyncAboutDocumentationLink=README-Datei lesen
+EklorSyncAboutSupportValue=Kontaktieren Sie Ihren Integrator für den Support.
 
-PowrSyncVisibleColumns=Sichtbare Spalten
-PowrSyncRecordsPerPage=Einträge pro Seite
-PowrSyncSyncAllProducts=Alle Produkte synchronisieren
+EklorSyncVisibleColumns=Sichtbare Spalten
+EklorSyncRecordsPerPage=Einträge pro Seite
+EklorSyncSyncAllProducts=Alle Produkte synchronisieren

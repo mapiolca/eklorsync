@@ -1,73 +1,73 @@
-# Module PowrSync - English translations
+# Module EklorSync - English translations
 
-PowrSyncSetup=EKLOR Setup
-PowrConnectCredentials=Login credentials
-PowrConnectEmail=EKLOR Email
-PowrConnectEmailHelp=Your login email for EKLOR.shop
-PowrConnectPassword=EKLOR Password
-PowrConnectPasswordHelp=Leave empty to keep current password
-PowrConnectMapping=Supplier mapping
-PowrConnectSupplier=Dolibarr Supplier
-PowrConnectSupplierHelp=Select the EKLOR supplier record in Dolibarr
-PowrSyncAdvanced=Advanced settings
-PowrSyncDelay=Delay between requests
-PowrSyncDelayHelp=Wait time between each product (500ms minimum to avoid overloading the site)
-PowrSyncDefaultVatRate=Default VAT rate
-PowrSyncDefaultVatRateHelp=VAT rate (excl. tax) applied on each supplier purchase price update.
-PowrSyncDefaultVatRateRequired=The "Default VAT rate" setting is required. Please configure it in PowrSync setup.
-PowrSyncConfigOk=Connected with account %s
+EklorSyncSetup=EKLOR Setup
+EklorConnectCredentials=Login credentials
+EklorConnectEmail=EKLOR Email
+EklorConnectEmailHelp=Your login email for EKLOR.shop
+EklorConnectPassword=EKLOR Password
+EklorConnectPasswordHelp=Leave empty to keep current password
+EklorConnectMapping=Supplier mapping
+EklorConnectSupplier=Dolibarr Supplier
+EklorConnectSupplierHelp=Select the EKLOR supplier record in Dolibarr
+EklorSyncAdvanced=Advanced settings
+EklorSyncDelay=Delay between requests
+EklorSyncDelayHelp=Wait time between each product (500ms minimum to avoid overloading the site)
+EklorSyncDefaultVatRate=Default VAT rate
+EklorSyncDefaultVatRateHelp=VAT rate (excl. tax) applied on each supplier purchase price update.
+EklorSyncDefaultVatRateRequired=The "Default VAT rate" setting is required. Please configure it in EklorSync setup.
+EklorSyncConfigOk=Connected with account %s
 
-PowrSyncTestConnection=Connection test
-PowrSyncTestUrl=Test product URL
-PowrSyncTestUrlHelp=Paste a product URL from EKLOR.shop to verify the connection and price reading
-PowrSyncTestButton=Test connection
+EklorSyncTestConnection=Connection test
+EklorSyncTestUrl=Test product URL
+EklorSyncTestUrlHelp=Paste a product URL from EKLOR.shop to verify the connection and price reading
+EklorSyncTestButton=Test connection
 
-PowrSyncTitle=EKLOR Price Sync
-PowrSyncNotConfigured=The EKLOR module is not yet configured.
+EklorSyncTitle=EKLOR Price Sync
+EklorSyncNotConfigured=The EKLOR module is not yet configured.
 GoToSetup=Go to setup
 SyncAllPrices=Sync all prices
-PowrSyncConfirmAll=You are about to sync all EKLOR supplier prices. This may take several minutes. Continue?
-PowrSyncDone=%s product(s) processed
-PowrSyncUpdated=Price updated for %s (ref. %s)
-PowrSyncUpToDate=Price already up to date for %s
-PowrSyncNoProducts=No products with a EKLOR supplier reference found.
-PowrSyncProductCount=%s product(s) with EKLOR reference
-PowrSyncProductNotFound=Product not found in EKLOR list
-PowrSyncDbError=Database error
+EklorSyncConfirmAll=You are about to sync all EKLOR supplier prices. This may take several minutes. Continue?
+EklorSyncDone=%s product(s) processed
+EklorSyncUpdated=Price updated for %s (ref. %s)
+EklorSyncUpToDate=Price already up to date for %s
+EklorSyncNoProducts=No products with a EKLOR supplier reference found.
+EklorSyncProductCount=%s product(s) with EKLOR reference
+EklorSyncProductNotFound=Product not found in EKLOR list
+EklorSyncDbError=Database error
 
-PowrRef=EKLOR Ref.
+EklorRef=EKLOR Ref.
 CurrentBuyPrice=Current buy price
 LastSyncPrice=Last scraped price
 LastSync=Last sync
 Sync=Sync
 Never=Never
 
-PowrSyncLog=Sync history
+EklorSyncLog=Sync history
 OldPrice=Old price
 NewPrice=New price
 Variation=Variation
 
-PowrLogUpdated=Updated
-PowrLogUpToDate=Up to date
-PowrLogError=Error
+EklorLogUpdated=Updated
+EklorLogUpToDate=Up to date
+EklorLogError=Error
 
-PowrSyncSupplierUrlLabel=Supplier product URL
-PowrSyncSupplierUrlTooltip=Enter the URL leading to the supplier shop product page
+EklorSyncSupplierUrlLabel=Supplier product URL
+EklorSyncSupplierUrlTooltip=Enter the URL leading to the supplier shop product page
 
-PowrSyncAboutPage=Information about the PowrSync module
-PowrSyncAboutGeneral=General information
-PowrSyncAboutVersion=Version
-PowrSyncAboutFamily=Family
-PowrSyncAboutDescription=Description
-PowrSyncAboutMaintainer=Maintainer
-PowrSyncAboutResources=Resources
-PowrSyncAboutDocumentation=Documentation
-PowrSyncAboutSupport=Support
-PowrSyncAboutContact=Contact
-PowrSyncAbout=About PowrSync
-PowrSyncAboutDocumentationLink=Read the README file
-PowrSyncAboutSupportValue=Contact your integrator for support.
+EklorSyncAboutPage=Information about the EklorSync module
+EklorSyncAboutGeneral=General information
+EklorSyncAboutVersion=Version
+EklorSyncAboutFamily=Family
+EklorSyncAboutDescription=Description
+EklorSyncAboutMaintainer=Maintainer
+EklorSyncAboutResources=Resources
+EklorSyncAboutDocumentation=Documentation
+EklorSyncAboutSupport=Support
+EklorSyncAboutContact=Contact
+EklorSyncAbout=About EklorSync
+EklorSyncAboutDocumentationLink=Read the README file
+EklorSyncAboutSupportValue=Contact your integrator for support.
 
-PowrSyncVisibleColumns=Visible columns
-PowrSyncRecordsPerPage=Records per page
-PowrSyncSyncAllProducts=Synchronize all products
+EklorSyncVisibleColumns=Visible columns
+EklorSyncRecordsPerPage=Records per page
+EklorSyncSyncAllProducts=Synchronize all products

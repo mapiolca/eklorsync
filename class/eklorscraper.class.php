@@ -38,7 +38,7 @@ class EklorScraper
 
 	public function __construct($tempDir = '/tmp')
 	{
-		$this->cookieFile = $tempDir.'/powrsync_'.md5(__FILE__).'.txt';
+		$this->cookieFile = $tempDir.'/eklorsync_'.md5(__FILE__).'.txt';
 	}
 
 	private function initCurl()
@@ -289,17 +289,17 @@ class EklorScraper
 	 * @param	string	$login
 	 * @param	string	$password
 	 * @param	string	$url
-	 * @param	string	$powrRef
+	 * @param	string	$eklorRef
 	 * @return	float|false
 	 */
-	public function testConnectionAndGetPrice($login, $password, $url, $powrRef = 'TEST')
+	public function testConnectionAndGetPrice($login, $password, $url, $eklorRef = 'TEST')
 	{
 		$ret = $this->login($login, $password);
 		if ($ret < 0) {
 			return false;
 		}
 
-		return $this->getPrice($powrRef, $url);
+		return $this->getPrice($eklorRef, $url);
 	}
 
 	/**
@@ -363,13 +363,13 @@ class EklorScraper
 	/**
 	 * Récupère le prix HT d'un produit via son URL directe sur le site fournisseur
 	 *
-	 * @param  string $powrRef  Référence fournisseur (pour les messages d'erreur)
+	 * @param  string $eklorRef  Référence fournisseur (pour les messages d'erreur)
 	 * @param  string $url      URL complète de la fiche produit sur le site fournisseur
 	 * @return float|false      Prix HT ou false si non trouvé
 	 */
-	public function getPrice($powrRef, $url = '')
+	public function getPrice($eklorRef, $url = '')
 	{
-		$this->debug('getPrice() — ref='.$powrRef.', url='.$url);
+		$this->debug('getPrice() — ref='.$eklorRef.', url='.$url);
 
 		if (!$this->loggedIn) {
 			$this->error = 'Non authentifié';
@@ -378,7 +378,7 @@ class EklorScraper
 		}
 
 		if (empty($url)) {
-			$this->error = 'URL produit non renseignée pour '.$powrRef;
+			$this->error = 'URL produit non renseignée pour '.$eklorRef;
 			$this->debug('ERREUR : URL manquante');
 			return false;
 		}
@@ -397,13 +397,13 @@ class EklorScraper
 		$this->debug('GET produit → HTTP '.$httpCode.' — URL finale : '.$finalUrl.' — HTML length='.strlen($html).' bytes');
 
 		if (curl_errno($this->ch)) {
-			$this->error = 'cURL erreur ref '.$powrRef.' : '.curl_error($this->ch);
+			$this->error = 'cURL erreur ref '.$eklorRef.' : '.curl_error($this->ch);
 			$this->debug('ERREUR cURL : '.$this->error);
 			return false;
 		}
 		if ($httpCode === 404) {
-			$this->error = 'Référence '.$powrRef.' introuvable (404)';
-			$this->debug('ERREUR 404 pour '.$powrRef);
+			$this->error = 'Référence '.$eklorRef.' introuvable (404)';
+			$this->debug('ERREUR 404 pour '.$eklorRef);
 			return false;
 		}
 		if ($httpCode === 302 || strpos($finalUrl, '/connexion') !== false) {
@@ -412,7 +412,7 @@ class EklorScraper
 			return false;
 		}
 
-		return $this->parsePrice($html, $powrRef);
+		return $this->parsePrice($html, $eklorRef);
 	}
 
 	/**
@@ -498,9 +498,9 @@ class EklorScraper
 	 * à l'intérieur d'un conteneur "bg-secondary-100" (promo) ou "bg-grey-50" (normal).
 	 * Format typique : <p class="text-[15px] font-semibold leading-none">661,38&nbsp;€</p>
 	 */
-	private function parsePrice($html, $powrRef)
+	private function parsePrice($html, $eklorRef)
 	{
-		$this->debug('parsePrice() — ref='.$powrRef.', HTML length='.strlen($html).' bytes');
+		$this->debug('parsePrice() — ref='.$eklorRef.', HTML length='.strlen($html).' bytes');
 
 		// Stratégie 1 : regex directe sur le pattern de prix affiché
 		// Cherche le prix dans le bloc "À l'unité" (premier prix font-semibold leading-none suivi de €)
@@ -559,7 +559,7 @@ class EklorScraper
 			}
 		}
 
-		$this->error = 'Prix non trouvé pour '.$powrRef.' — vérifier la structure HTML de la page';
+		$this->error = 'Prix non trouvé pour '.$eklorRef.' — vérifier la structure HTML de la page';
 		$this->debug('ERREUR : '.$this->error);
 		return false;
 	}

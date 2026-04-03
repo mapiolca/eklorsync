@@ -2,17 +2,17 @@
 /* Copyright (C) 2024 Votre Société — Licence GNU GPL v3 */
 
 require_once DOL_DOCUMENT_ROOT.'/core/class/commonobject.class.php';
-require_once DOL_DOCUMENT_ROOT.'/custom/powrsync/class/eklorscraper.class.php';
+require_once DOL_DOCUMENT_ROOT.'/custom/eklorsync/class/eklorscraper.class.php';
 
 /**
- * PowrSync
+ * EklorSync
  *
  * Orchestrateur : parcourt les produits Dolibarr ayant une ref fournisseur
  * EKLOR, récupère les prix via le scraper, compare et met à jour.
  */
 class EklorSync extends CommonObject
 {
-	public $element       = 'powrsync';
+	public $element       = 'eklorsync';
 	public $table_element = 'eklorsync_log';
 	public $picto         = 'fa-sun';
 
@@ -47,45 +47,45 @@ class EklorSync extends CommonObject
 
 		// Récupération des identifiants depuis la config si non fournis
 		if (empty($email)) {
-			$email    = getDolGlobalString('POWRSYNC_LOGIN');
+			$email    = getDolGlobalString('EKLORSYNC_LOGIN');
 		}
 		if (empty($password)) {
-			$password = getDolGlobalString('POWRSYNC_PASSWORD');
+			$password = getDolGlobalString('EKLORSYNC_PASSWORD');
 		}
 
 		if (empty($email) || empty($password)) {
 			$this->error = 'Identifiants EKLOR non configurés (Menu : Config > EKLOR Sync)';
-			dol_syslog('PowrSync: '.$this->error, LOG_WARNING);
+			dol_syslog('EklorSync: '.$this->error, LOG_WARNING);
 			return 1;
 		}
 
 		// Use configured supplier first to mirror sync.php behavior
-		$this->supplierId = (int) getDolGlobalInt('POWRSYNC_SUPPLIER_ID');
+		$this->supplierId = (int) getDolGlobalInt('EKLORSYNC_SUPPLIER_ID');
 		if ($this->supplierId <= 0) {
 			$this->supplierId = $this->findSupplierId();
 		}
 		if ($this->supplierId <= 0) {
 			$this->error = 'Fournisseur "'.$this->supplierName.'" introuvable dans Dolibarr. Le créer d\'abord.';
-			dol_syslog('PowrSync: '.$this->error, LOG_WARNING);
+			dol_syslog('EklorSync: '.$this->error, LOG_WARNING);
 			return 1;
 		}
 
 		// Récupérer les produits avec une ref EKLOR
-		$products = $this->getProductsWithPowrRef();
+		$products = $this->getProductsWithEklorRef();
 		if (empty($products)) {
-			$this->output = "PowrSync success: 0 product checked, 0 updated, 0 error";
+			$this->output = "EklorSync success: 0 product checked, 0 updated, 0 error";
 			dol_syslog($this->output , LOG_INFO);
 			
 			return 0;
 		}
 
 		// Connexion au site EKLOR
-		$tempDir = $conf->powrsync->dir_temp ?: sys_get_temp_dir();
+		$tempDir = $conf->eklorsync->dir_temp ?: sys_get_temp_dir();
 		$scraper = new EklorScraper($tempDir);
 
 		if ($scraper->login($email, $password) < 0) {
 			$this->error = 'Connexion EKLOR échouée : '.$scraper->error;
-			dol_syslog('PowrSync: '.$this->error, LOG_WARNING);
+			dol_syslog('EklorSync: '.$this->error, LOG_WARNING);
 			return 1;
 		}
 
@@ -102,7 +102,7 @@ class EklorSync extends CommonObject
 		$scraper->close();
 
 		$errorCount = count($this->errors);
-		$this->output = 'PowrSync success: '.$checkedCount.' products checked, '.$updatedCount.' updated, '.$errorCount.' error';
+		$this->output = 'EklorSync success: '.$checkedCount.' products checked, '.$updatedCount.' updated, '.$errorCount.' error';
 		dol_syslog($this->output, LOG_INFO);
 		return 0;
 	}
@@ -120,23 +120,23 @@ class EklorSync extends CommonObject
 	{
 		global $user;
 
-		$powrRef    = $product['ref_fourn'];
+		$eklorRef    = $product['ref_fourn'];
 		$productId  = $product['product_id'];
 		$currentPrice = (float) $product['unitprice'];
-		$powrUrl    = !empty($product['supplier_url']) ? $product['supplier_url'] : '';
+		$eklorUrl    = !empty($product['supplier_url']) ? $product['supplier_url'] : '';
 
-		if (empty($powrUrl)) {
-			$this->addError('Ref '.$powrRef.' : URL fournisseur non renseignée (extrafield supplier_url)');
-			$this->logSync($productId, $powrRef, $currentPrice, null, 'error', 'URL fournisseur manquante');
+		if (empty($eklorUrl)) {
+			$this->addError('Ref '.$eklorRef.' : URL fournisseur non renseignée (extrafield supplier_url)');
+			$this->logSync($productId, $eklorRef, $currentPrice, null, 'error', 'URL fournisseur manquante');
 			return -1;
 		}
 
 		// Récupération du prix sur le site via l'URL directe
-		$newPrice = $scraper->getPrice($powrRef, $powrUrl);
+		$newPrice = $scraper->getPrice($eklorRef, $eklorUrl);
 
 		if ($newPrice === false) {
-			$this->addError('Ref '.$powrRef.' : '.$scraper->error);
-			$this->logSync($productId, $powrRef, $currentPrice, null, 'error', $scraper->error);
+			$this->addError('Ref '.$eklorRef.' : '.$scraper->error);
+			$this->logSync($productId, $eklorRef, $currentPrice, null, 'error', $scraper->error);
 			return -1;
 		}
 
@@ -144,7 +144,7 @@ class EklorSync extends CommonObject
 		$hasChanged = (abs($newPrice - $currentPrice) > 0.001);
 
 		if (!$hasChanged) {
-			$this->logSync($productId, $powrRef, $currentPrice, $newPrice, 'unchanged', '');
+			$this->logSync($productId, $eklorRef, $currentPrice, $newPrice, 'unchanged', '');
 			return 0;
 		}
 
@@ -152,18 +152,18 @@ class EklorSync extends CommonObject
 		$result = $this->updateSupplierPrice(
 			$productId,
 			$this->supplierId,
-			$powrRef,
+			$eklorRef,
 			(float) $product['qty_min_to_buy'],
 			$newPrice,
 			(int) $product['pfp_id']
 		);
 
 		if ($result < 0) {
-			$this->logSync($productId, $powrRef, $currentPrice, $newPrice, 'error', $this->error);
+			$this->logSync($productId, $eklorRef, $currentPrice, $newPrice, 'error', $this->error);
 			return -1;
 		}
 
-		$this->logSync($productId, $powrRef, $currentPrice, $newPrice, 'updated', '');
+		$this->logSync($productId, $eklorRef, $currentPrice, $newPrice, 'updated', '');
 		return 1;
 	}
 
@@ -194,7 +194,7 @@ class EklorSync extends CommonObject
 	 * Retourne la liste des produits ayant une ref fournisseur EKLOR
 	 * sous forme de tableau : product_id, ref_fourn, unit_price, qty_min_to_buy
 	 */
-	private function getProductsWithPowrRef()
+	private function getProductsWithEklorRef()
 	{
 		$sql = "SELECT pfp.fk_product AS product_id,"
 			." pfp.ref_fourn,"
@@ -214,7 +214,7 @@ class EklorSync extends CommonObject
 
 		$res = $this->db->query($sql);
 		if (!$res) {
-			$this->error = 'SQL getProductsWithPowrRef : '.$this->db->lasterror();
+			$this->error = 'SQL getProductsWithEklorRef : '.$this->db->lasterror();
 			return array();
 		}
 
@@ -251,13 +251,13 @@ class EklorSync extends CommonObject
 
 		$productFournisseur = new ProductFournisseur($this->db);
 		$qty = max(1, $qty);
-		$configuredVatRaw = getDolGlobalString('POWRSYNC_DEFAULT_VAT_RATE');
+		$configuredVatRaw = getDolGlobalString('EKLORSYNC_DEFAULT_VAT_RATE');
 		if (trim((string) $configuredVatRaw) === '') {
 			if (is_object($langs)) {
-				$langs->load('eklorsync@powrsync');
-				$this->error = $langs->trans('PowrSyncDefaultVatRateRequired');
+				$langs->load('eklorsync@eklorsync');
+				$this->error = $langs->trans('EklorSyncDefaultVatRateRequired');
 			} else {
-				$this->error = 'POWRSYNC_DEFAULT_VAT_RATE is required';
+				$this->error = 'EKLORSYNC_DEFAULT_VAT_RATE is required';
 			}
 			return -1;
 		}
@@ -374,13 +374,13 @@ class EklorSync extends CommonObject
 	 * Enregistre une ligne dans llx_eklorsync_log
 	 *
 	 * @param  int    $productId
-	 * @param  string $powrRef
+	 * @param  string $eklorRef
 	 * @param  float  $oldPrice
 	 * @param  float|null $newPrice
 	 * @param  string $status   'updated'|'unchanged'|'error'
 	 * @param  string $message
 	 */
-	private function logSync($productId, $powrRef, $oldPrice, $newPrice, $status, $message)
+	private function logSync($productId, $eklorRef, $oldPrice, $newPrice, $status, $message)
 	{
 		$columns = $this->getLogColumns();
 		if (empty($columns)) {
@@ -402,7 +402,7 @@ class EklorSync extends CommonObject
 		}
 		if (!empty($columns['ref_fourn'])) {
 			$fields[] = 'ref_fourn';
-			$values[] = "'".$this->db->escape($powrRef)."'";
+			$values[] = "'".$this->db->escape($eklorRef)."'";
 		}
 		if (!empty($columns['old_price'])) {
 			$fields[] = 'old_price';
@@ -481,7 +481,7 @@ class EklorSync extends CommonObject
 	private function addError($msg)
 	{
 		$this->errors[] = $msg;
-		dol_syslog('PowrSync ERROR: '.$msg, LOG_ERR);
+		dol_syslog('EklorSync ERROR: '.$msg, LOG_ERR);
 	}
 
 	/**

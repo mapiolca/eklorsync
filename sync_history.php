@@ -17,25 +17,25 @@
 
 /**
  * \file	sync_history.php
- * \ingroup	powrsync
+ * \ingroup	eklorsync
  * \brief	Synchronization history list page.
  */
 
 require '../../main.inc.php';
 require_once DOL_DOCUMENT_ROOT.'/core/class/html.form.class.php';
-require_once dol_buildpath('/powrsync/class/eklorscraper.class.php', 0);
+require_once dol_buildpath('/eklorsync/class/eklorscraper.class.php', 0);
 
-$langs->loadLangs(array('products', 'eklorsync@powrsync'));
+$langs->loadLangs(array('products', 'eklorsync@eklorsync'));
 
-if (!isModEnabled('powrsync')) {
+if (!isModEnabled('eklorsync')) {
 	accessforbidden();
 }
-if (!$user->hasRight('powrsync', 'synclog', 'read')) {
+if (!$user->hasRight('eklorsync', 'synclog', 'read')) {
 	accessforbidden();
 }
 
 $form = new Form($db);
-$fkSoc = getDolGlobalInt('POWRSYNC_SUPPLIER_ID');
+$fkSoc = getDolGlobalInt('EKLORSYNC_SUPPLIER_ID');
 
 $limit = GETPOSTINT('limit') > 0 ? GETPOSTINT('limit') : $conf->liste_limit;
 $sortfield = GETPOST('sortfield', 'aZ09comma') ? GETPOST('sortfield', 'aZ09comma') : 'l.datec';
@@ -80,7 +80,7 @@ $hasRefFournColumn = !empty($availableColumns['ref_fourn']);
 $arrayfields = array(
 	'datec' => array('label' => 'Date', 'checked' => 1),
 	'ref_product' => array('label' => 'ProductRef', 'checked' => 1),
-	'ref_fourn' => array('label' => 'PowrRef', 'checked' => 1),
+	'ref_fourn' => array('label' => 'EklorRef', 'checked' => 1),
 	'old_price' => array('label' => 'OldPrice', 'checked' => 1),
 	'new_price' => array('label' => 'NewPrice', 'checked' => 1),
 	'variation' => array('label' => 'Variation', 'checked' => 1),
@@ -129,7 +129,7 @@ $sqlfrom = " FROM ".MAIN_DB_PREFIX."eklorsync_log AS l";
 $sqlfrom .= " LEFT JOIN ".MAIN_DB_PREFIX."product AS p ON p.rowid = l.fk_product";
 $sqlwhere = " WHERE 1 = 1";
 if ($hasEntityColumn) {
-	$sqlwhere .= " AND l.entity IN (".getEntity('powrsync').")";
+	$sqlwhere .= " AND l.entity IN (".getEntity('eklorsync').")";
 }
 if ($search_ref_fourn !== '' && $hasRefFournColumn) {
 	$sqlwhere .= " AND l.ref_fourn LIKE '%".$db->escape($search_ref_fourn)."%'";
@@ -170,7 +170,7 @@ if ($rescount) {
 	$total = (int) $objcount->nb;
 }
 
-$contextpage = GETPOST('contextpage', 'aZ') ? GETPOST('contextpage', 'aZ') : 'powrsyncsynchistory';
+$contextpage = GETPOST('contextpage', 'aZ') ? GETPOST('contextpage', 'aZ') : 'eklorsyncsynchistory';
 $varpage = empty($contextpage) ? $_SERVER['PHP_SELF'] : $contextpage;
 $selectedfieldshtml = $form->multiSelectArrayWithCheckbox('selectedfields', $arrayfields, $varpage, (!empty($conf->main_checkbox_left_column) ? 1 : 0));
 
@@ -187,10 +187,10 @@ foreach ($arrayfields as $key => $meta) {
 	}
 }
 
-llxHeader('', $langs->trans('PowrSyncLog'));
+llxHeader('', $langs->trans('EklorSyncLog'));
 
 print '<form method="GET" action="'.$_SERVER['PHP_SELF'].'">';
-print_barre_liste($langs->trans('PowrSyncLog'), $page, $_SERVER['PHP_SELF'], $param, $sortfield, $sortorder, '', $num, $total, 'clock', 0, '', '', $limit, 0, 0, 1);
+print_barre_liste($langs->trans('EklorSyncLog'), $page, $_SERVER['PHP_SELF'], $param, $sortfield, $sortorder, '', $num, $total, 'clock', 0, '', '', $limit, 0, 0, 1);
 
 print '<div class="div-table-responsive">';
 print '<table class="tagtable nobottomiftotal noborder liste">';
@@ -225,9 +225,9 @@ if (!empty($arrayfields['status']['checked'])) {
 	print '<td class="center">';
 	print $form->selectarray('search_status', array(
 		'' => $langs->trans('All'),
-		EklorScraper::LOG_OK => $langs->trans('PowrLogUpdated'),
-		EklorScraper::LOG_UPTODATE => $langs->trans('PowrLogUpToDate'),
-		EklorScraper::LOG_ERROR => $langs->trans('PowrLogError'),
+		EklorScraper::LOG_OK => $langs->trans('EklorLogUpdated'),
+		EklorScraper::LOG_UPTODATE => $langs->trans('EklorLogUpToDate'),
+		EklorScraper::LOG_ERROR => $langs->trans('EklorLogError'),
 	), $search_status, 0, 0, 0, '', 0, 0, 0, '', 'maxwidth150');
 	print '</td>';
 }
@@ -245,7 +245,7 @@ if (!empty($arrayfields['ref_product']['checked'])) {
 	print getTitleFieldOfList($langs->trans('ProductRef'), 0, $_SERVER['PHP_SELF'], 'l.ref_product', '', $param, '', $sortfield, $sortorder);
 }
 if (!empty($arrayfields['ref_fourn']['checked'])) {
-	print getTitleFieldOfList($langs->trans('PowrRef'), 0, $_SERVER['PHP_SELF'], 'l.ref_fourn', '', $param, '', $sortfield, $sortorder);
+	print getTitleFieldOfList($langs->trans('EklorRef'), 0, $_SERVER['PHP_SELF'], 'l.ref_fourn', '', $param, '', $sortfield, $sortorder);
 }
 if (!empty($arrayfields['old_price']['checked'])) {
 	print '<td class="right">'.$langs->trans('OldPrice').'</td>';
@@ -272,11 +272,11 @@ if ($resql) {
 		$statusRaw = is_string($obj->status) ? strtolower((string) $obj->status) : (string) $obj->status;
 		$statusNum = is_numeric($obj->status) ? (int) $obj->status : null;
 
-		$badge = '<span class="badge badge-status8">'.$langs->trans('PowrLogError').'</span>';
+		$badge = '<span class="badge badge-status8">'.$langs->trans('EklorLogError').'</span>';
 		if ($statusNum === EklorScraper::LOG_OK || in_array($statusRaw, array('updated', 'ok', 'success'), true)) {
-			$badge = '<span class="badge badge-status4">'.$langs->trans('PowrLogUpdated').'</span>';
+			$badge = '<span class="badge badge-status4">'.$langs->trans('EklorLogUpdated').'</span>';
 		} elseif ($statusNum === EklorScraper::LOG_UPTODATE || in_array($statusRaw, array('unchanged', 'uptodate'), true)) {
-			$badge = '<span class="badge badge-status1">'.$langs->trans('PowrLogUpToDate').'</span>';
+			$badge = '<span class="badge badge-status1">'.$langs->trans('EklorLogUpToDate').'</span>';
 		}
 
 		print '<tr class="oddeven">';

@@ -1,5 +1,5 @@
 <?php
-/* Copyright (C) 2024 - Module PowrSync
+/* Copyright (C) 2024 - Module EklorSync
  * Page de synchronisation des prix EKLOR
  */
 
@@ -9,16 +9,16 @@ require_once DOL_DOCUMENT_ROOT.'/core/lib/product.lib.php';
 require_once DOL_DOCUMENT_ROOT.'/core/lib/tax.lib.php';
 require_once DOL_DOCUMENT_ROOT.'/product/class/product.class.php';
 require_once DOL_DOCUMENT_ROOT.'/fourn/class/fournisseur.product.class.php';
-require_once dol_buildpath('/powrsync/class/eklorsync.class.php', 0);
-require_once dol_buildpath('/powrsync/class/eklorscraper.class.php', 0);
+require_once dol_buildpath('/eklorsync/class/eklorsync.class.php', 0);
+require_once dol_buildpath('/eklorsync/class/eklorscraper.class.php', 0);
 
-$langs->loadLangs(array('products', 'suppliers', 'eklorsync@powrsync'));
+$langs->loadLangs(array('products', 'suppliers', 'eklorsync@eklorsync'));
 
-if (!isModEnabled('powrsync')) {
-	accessforbidden('Module PowrSync non activé');
+if (!isModEnabled('eklorsync')) {
+	accessforbidden('Module EklorSync non activé');
 }
 
-if (!$user->hasRight('powrsync', 'synclog', 'read')) {
+if (!$user->hasRight('eklorsync', 'synclog', 'read')) {
 	accessforbidden();
 }
 
@@ -30,12 +30,12 @@ $sortorder           = GETPOST('sortorder', 'aZ09comma') ? GETPOST('sortorder', 
 $search_ref_product  = trim(GETPOST('search_ref_product', 'alphanohtml'));
 $search_ref_fourn    = trim(GETPOST('search_ref_fourn', 'alphanohtml'));
 
-$tempDir = !empty($conf->powrsync->dir_temp) ? $conf->powrsync->dir_temp : sys_get_temp_dir();
+$tempDir = !empty($conf->eklorsync->dir_temp) ? $conf->eklorsync->dir_temp : sys_get_temp_dir();
 $scraper = new EklorScraper($tempDir);
 
-$fkSoc = getDolGlobalInt('POWRSYNC_SUPPLIER_ID');
-$email = getDolGlobalString('POWRSYNC_LOGIN');
-$pwd   = getDolGlobalString('POWRSYNC_PASSWORD');
+$fkSoc = getDolGlobalInt('EKLORSYNC_SUPPLIER_ID');
+$email = getDolGlobalString('EKLORSYNC_LOGIN');
+$pwd   = getDolGlobalString('EKLORSYNC_PASSWORD');
 
 $form = new Form($db);
 
@@ -57,7 +57,7 @@ if ($search_ref_fourn !== '') {
 // ACTIONS
 // =========================================================================
 
-if ($user->hasRight('powrsync', 'synclog', 'write')) {
+if ($user->hasRight('eklorsync', 'synclog', 'write')) {
 
 	// --- Synchronisation par batch avec barre de progression (1 produit par rechargement) ---
 
@@ -87,11 +87,11 @@ if ($user->hasRight('powrsync', 'synclog', 'write')) {
 			$totalCount = ($resCount && ($objCount = $db->fetch_object($resCount))) ? (int) $objCount->nb : 0;
 
 			// Purge des cookies de session précédente pour forcer un login frais
-			array_map('unlink', glob($tempDir.'/powrsync_*.txt'));
+			array_map('unlink', glob($tempDir.'/eklorsync_*.txt'));
 		}
 
 		// Récupère uniquement le produit courant via LIMIT/OFFSET
-		$batch = getProductsWithPowrRef($db, $fkSoc, 'p.ref', 'ASC', '', '', true, $batchSize, $offset);
+		$batch = getProductsWithEklorRef($db, $fkSoc, 'p.ref', 'ASC', '', '', true, $batchSize, $offset);
 		if ($batch === false) {
 			$batch = array();
 		}
@@ -99,8 +99,8 @@ if ($user->hasRight('powrsync', 'synclog', 'write')) {
 		foreach ($batch as $productToSync) {
 			$ret = syncOneSupplierProductPrice(
 				$db, $scraper, $productToSync, $fkSoc, $user,
-				getDolGlobalString('POWRSYNC_LOGIN'),
-				dol_decode(getDolGlobalString('POWRSYNC_PASSWORD'))
+				getDolGlobalString('EKLORSYNC_LOGIN'),
+				dol_decode(getDolGlobalString('EKLORSYNC_PASSWORD'))
 			);
 
 			// Premier produit : si échec, on retente une fois —
@@ -109,8 +109,8 @@ if ($user->hasRight('powrsync', 'synclog', 'write')) {
 				sleep(1);
 				$ret = syncOneSupplierProductPrice(
 					$db, $scraper, $productToSync, $fkSoc, $user,
-					getDolGlobalString('POWRSYNC_LOGIN'),
-					dol_decode(getDolGlobalString('POWRSYNC_PASSWORD'))
+					getDolGlobalString('EKLORSYNC_LOGIN'),
+					dol_decode(getDolGlobalString('EKLORSYNC_PASSWORD'))
 				);
 			}
 
@@ -127,7 +127,7 @@ if ($user->hasRight('powrsync', 'synclog', 'write')) {
 		$percent   = $totalCount > 0 ? min(100, (int) round($newOffset / $totalCount * 100)) : 100;
 
 		// --- Rendu de la page de progression ---
-		llxHeader('', $langs->trans('PowrSyncTitle'));
+		llxHeader('', $langs->trans('EklorSyncTitle'));
 
 		print '<div style="max-width:720px; margin:50px auto; padding:0 20px;">';
 
@@ -161,7 +161,7 @@ if ($user->hasRight('powrsync', 'synclog', 'write')) {
 			print '<table class="tagtable noborder liste" style="font-size:13px;">';
 			print '<tr class="liste_titre">';
 			print '<td>'.$langs->trans('ProductRef').'</td>';
-			print '<td>'.$langs->trans('PowrRef').'</td>';
+			print '<td>'.$langs->trans('EklorRef').'</td>';
 			print '<td class="right">'.$langs->trans('OldPrice').'</td>';
 			print '<td class="right">'.$langs->trans('NewPrice').'</td>';
 			print '<td class="center">'.$langs->trans('Status').'</td>';
@@ -172,13 +172,13 @@ if ($user->hasRight('powrsync', 'synclog', 'write')) {
 
 				if ($status == EklorScraper::LOG_OK) {
 					$badgeClass = 'badge badge-status4';
-					$badgeLabel = $langs->trans('PowrLogUpdated');
+					$badgeLabel = $langs->trans('EklorLogUpdated');
 				} elseif ($status == EklorScraper::LOG_UPTODATE) {
 					$badgeClass = 'badge badge-status1';
-					$badgeLabel = $langs->trans('PowrLogUpToDate');
+					$badgeLabel = $langs->trans('EklorLogUpToDate');
 				} else {
 					$badgeClass = 'badge badge-status8';
-					$badgeLabel = $langs->trans('PowrLogError');
+					$badgeLabel = $langs->trans('EklorLogError');
 				}
 
 				$oldPriceHtml = $logObj->old_price !== null ? price($logObj->old_price).' €' : '-';
@@ -215,13 +215,13 @@ if ($user->hasRight('powrsync', 'synclog', 'write')) {
 			if ($totalErrors > 0) {
 				print '<div class="warning" style="margin-top:20px; padding:12px 16px;">';
 				print img_picto('', 'warning', 'class="pictofixedwidth"');
-				print ' '.$langs->trans('PowrSyncDone', $totalUpdated);
+				print ' '.$langs->trans('EklorSyncDone', $totalUpdated);
 				print ' &mdash; '.$totalErrors.' erreur(s) rencontrée(s).';
 				print '</div>';
 			} else {
 				print '<div class="ok" style="margin-top:20px; padding:12px 16px;">';
 				print img_picto('', 'tick', 'class="pictofixedwidth"');
-				print ' '.$langs->trans('PowrSyncDone', $totalUpdated);
+				print ' '.$langs->trans('EklorSyncDone', $totalUpdated);
 				print ' &mdash; Tous les prix sont à jour.';
 				print '</div>';
 			}
@@ -262,19 +262,19 @@ if ($user->hasRight('powrsync', 'synclog', 'write')) {
 	// --- Synchronisation d'UN seul produit (bouton individuel) ---
 
 	if ($action == 'syncone' && $supplierPriceLineId > 0) {
-		$found = getProductWithPowrRefByLineId($db, $fkSoc, $supplierPriceLineId);
+		$found = getProductWithEklorRefByLineId($db, $fkSoc, $supplierPriceLineId);
 
 		if ($found === false) {
-			setEventMessages($langs->trans('PowrSyncDbError').': '.$db->lasterror(), null, 'errors');
+			setEventMessages($langs->trans('EklorSyncDbError').': '.$db->lasterror(), null, 'errors');
 		} elseif (empty($found)) {
-			setEventMessages($langs->trans('PowrSyncProductNotFound'), null, 'errors');
+			setEventMessages($langs->trans('EklorSyncProductNotFound'), null, 'errors');
 		} else {
-			$ret2 = syncOneSupplierProductPrice($db, $scraper, $found, $fkSoc, $user, getDolGlobalString('POWRSYNC_LOGIN'), dol_decode(getDolGlobalString('POWRSYNC_PASSWORD')));
+			$ret2 = syncOneSupplierProductPrice($db, $scraper, $found, $fkSoc, $user, getDolGlobalString('EKLORSYNC_LOGIN'), dol_decode(getDolGlobalString('EKLORSYNC_PASSWORD')));
 
 			if ($ret2 == 1) {
-				setEventMessages($langs->trans('PowrSyncUpdated', $found['ref_product'], $found['ref_fourn']), null, 'mesgs');
+				setEventMessages($langs->trans('EklorSyncUpdated', $found['ref_product'], $found['ref_fourn']), null, 'mesgs');
 			} elseif ($ret2 == 2) {
-				setEventMessages($langs->trans('PowrSyncUpToDate', $found['ref_product']), null, 'warnings');
+				setEventMessages($langs->trans('EklorSyncUpToDate', $found['ref_product']), null, 'warnings');
 			} else {
 				setEventMessages($scraper->error, null, 'errors');
 			}
@@ -294,11 +294,11 @@ $page  = 0;
 $limit = 0;
 $total = 0;
 
-llxHeader('', $langs->trans('PowrSyncTitle'));
+llxHeader('', $langs->trans('EklorSyncTitle'));
 
 $object = new EklorSync($db);
 
-print_barre_liste($langs->trans('PowrSyncTitle'), $page, $_SERVER['PHP_SELF'], $param, $sortfield, $sortorder, '', $total, $limit, $object->picto, 0, '', '', $limit);
+print_barre_liste($langs->trans('EklorSyncTitle'), $page, $_SERVER['PHP_SELF'], $param, $sortfield, $sortorder, '', $total, $limit, $object->picto, 0, '', '', $limit);
 
 // Vérification de la configuration
 $configOk = ($fkSoc > 0 && !empty($email) && !empty($pwd));
@@ -306,8 +306,8 @@ $configOk = ($fkSoc > 0 && !empty($email) && !empty($pwd));
 if (!$configOk) {
 	print '<div class="error">';
 	print img_picto('', 'warning', 'class="pictofixedwidth"');
-	print ' '.$langs->trans('PowrSyncNotConfigured');
-	print ' <a href="'.dol_buildpath('/powrsync/admin/setup.php', 1).'">'.$langs->trans('GoToSetup').'</a>';
+	print ' '.$langs->trans('EklorSyncNotConfigured');
+	print ' <a href="'.dol_buildpath('/eklorsync/admin/setup.php', 1).'">'.$langs->trans('GoToSetup').'</a>';
 	print '</div>';
 	llxFooter();
 	$db->close();
@@ -315,21 +315,21 @@ if (!$configOk) {
 }
 
 // Confirmation avant sync global
-if ($user->hasRight('powrsync', 'synclog', 'write')) {
+if ($user->hasRight('eklorsync', 'synclog', 'write')) {
 	$syncUrl = $_SERVER['PHP_SELF'].'?action=syncall_batch&offset=0&total=0&updated=0&errors=0&start_ts=0&token='.newToken();
 
 	print '<div class="tabsAction">';
-	print '<a class="butAction" id="btn-powrsync-all" href="#">';
+	print '<a class="butAction" id="btn-eklorsync-all" href="#">';
 	print img_picto('', 'refresh', 'class="pictofixedwidth"');
 	print ' '.$langs->trans('SyncAllPrices');
 	print '</a>';
 	print '</div>';
 
 	// Modal de confirmation
-	print '<div id="powrsync-confirm-modal" style="display:none;" title="'.$langs->trans('SyncAllPrices').'">';
+	print '<div id="eklorsync-confirm-modal" style="display:none;" title="'.$langs->trans('SyncAllPrices').'">';
 	print '<p>';
 	print img_picto('', 'warning', 'class="pictofixedwidth"');
-	print ' '.$langs->trans('PowrSyncConfirmAll');
+	print ' '.$langs->trans('EklorSyncConfirmAll');
 	print '</p>';
 	print '</div>';
 
@@ -337,7 +337,7 @@ if ($user->hasRight('powrsync', 'synclog', 'write')) {
 		print '<script>';
 		print 'jQuery(function($) {';
 		print '  var confirmUrl = '.json_encode($syncUrl).';';
-		print '  $("#powrsync-confirm-modal").dialog({';
+		print '  $("#eklorsync-confirm-modal").dialog({';
 		print '    autoOpen: false,';
 		print '    modal: true,';
 		print '    width: 460,';
@@ -351,9 +351,9 @@ if ($user->hasRight('powrsync', 'synclog', 'write')) {
 		print '      }';
 		print '    }';
 		print '  });';
-		print '  $("#btn-powrsync-all").on("click", function(e) {';
+		print '  $("#btn-eklorsync-all").on("click", function(e) {';
 		print '    e.preventDefault();';
-		print '    $("#powrsync-confirm-modal").dialog("open");';
+		print '    $("#eklorsync-confirm-modal").dialog("open");';
 		print '  });';
 		print '});';
 		print '</script>';
@@ -361,10 +361,10 @@ if ($user->hasRight('powrsync', 'synclog', 'write')) {
 }
 
 // Liste des produits avec ref EKLOR
-$products = getProductsWithPowrRef($db, $fkSoc, $sortfield, $sortorder, $search_ref_product, $search_ref_fourn);
+$products = getProductsWithEklorRef($db, $fkSoc, $sortfield, $sortorder, $search_ref_product, $search_ref_fourn);
 
 if ($products === false) {
-	print '<div class="error">'.$langs->trans('PowrSyncDbError').': '.dol_escape_htmltag($db->lasterror()).'</div>';
+	print '<div class="error">'.$langs->trans('EklorSyncDbError').': '.dol_escape_htmltag($db->lasterror()).'</div>';
 	llxFooter();
 	$db->close();
 	exit;
@@ -390,7 +390,7 @@ print '<tr class="liste_titre">';
 print '<td></td>';
 print getTitleFieldOfList($langs->trans('ProductRef'), 0, $_SERVER['PHP_SELF'], 'p.ref', '', $param, '', $sortfield, $sortorder);
 print getTitleFieldOfList($langs->trans('ProductLabel'), 0, $_SERVER['PHP_SELF'], 'p.label', '', $param, '', $sortfield, $sortorder);
-print getTitleFieldOfList($langs->trans('PowrRef'), 0, $_SERVER['PHP_SELF'], 'pfp.ref_fourn', '', $param, '', $sortfield, $sortorder);
+print getTitleFieldOfList($langs->trans('EklorRef'), 0, $_SERVER['PHP_SELF'], 'pfp.ref_fourn', '', $param, '', $sortfield, $sortorder);
 print '<td class="right">'.$langs->trans('CurrentBuyPrice').'</td>';
 print getTitleFieldOfList($langs->trans('LastSyncPrice'), 0, $_SERVER['PHP_SELF'], 'lastlog.new_price', '', $param, 'class="right"', $sortfield, $sortorder);
 print getTitleFieldOfList($langs->trans('LastSync'), 0, $_SERVER['PHP_SELF'], 'lastlog.datec', '', $param, 'class="center"', $sortfield, $sortorder);
@@ -399,7 +399,7 @@ print '<td class="center">'.$langs->trans('Action').'</td>';
 print '</tr>';
 
 if (empty($products)) {
-	print '<tr><td colspan="9" class="center opacitymedium">'.$langs->trans('PowrSyncNoProducts').'</td></tr>';
+	print '<tr><td colspan="9" class="center opacitymedium">'.$langs->trans('EklorSyncNoProducts').'</td></tr>';
 } else {
 	foreach ($products as $prod) {
 		$pid = (int) $prod['fk_product'];
@@ -419,15 +419,15 @@ if (empty($products)) {
 		if ($log) {
 			if ($log['status'] == EklorScraper::LOG_OK) {
 				$statusClass = 'badge badge-status4';
-				$statusLabel = $langs->trans('PowrLogUpdated');
+				$statusLabel = $langs->trans('EklorLogUpdated');
 				$statusIcon  = 'tick';
 			} elseif ($log['status'] == EklorScraper::LOG_UPTODATE) {
 				$statusClass = 'badge badge-status1';
-				$statusLabel = $langs->trans('PowrLogUpToDate');
+				$statusLabel = $langs->trans('EklorLogUpToDate');
 				$statusIcon  = 'check';
 			} else {
 				$statusClass = 'badge badge-status8';
-				$statusLabel = $langs->trans('PowrLogError');
+				$statusLabel = $langs->trans('EklorLogError');
 				$statusIcon  = 'warning';
 			}
 		}
@@ -498,7 +498,7 @@ if (empty($products)) {
 
 		// Bouton sync individuel
 		print '<td class="center">';
-		if ($user->hasRight('powrsync', 'synclog', 'write')) {
+		if ($user->hasRight('eklorsync', 'synclog', 'write')) {
 			print '<a class="reposition butActionSmall" href="'.$_SERVER['PHP_SELF'].'?action=syncone&lineid='.(int) $prod['pfp_rowid'].'&token='.newToken().'">';
 			print img_picto($langs->trans('Sync'), 'refresh');
 			print '</a>';
@@ -514,7 +514,7 @@ print '</div>';
 print '</form>';
 
 print '<br><p class="opacitymedium center">';
-print $langs->trans('PowrSyncProductCount', count($products));
+print $langs->trans('EklorSyncProductCount', count($products));
 print '</p>';
 
 llxFooter();
@@ -538,7 +538,7 @@ $db->close();
  * @param int    $offset             0 = depuis le début
  * @return array|false
  */
-function getProductsWithPowrRef($db, $fkSoc, $sortfield = 'p.ref', $sortorder = 'ASC',
+function getProductsWithEklorRef($db, $fkSoc, $sortfield = 'p.ref', $sortorder = 'ASC',
 	$searchRefProduct = '', $searchRefFourn = '', $requireSupplierUrl = false,
 	$limit = 0, $offset = 0)
 {
@@ -621,7 +621,7 @@ function getProductsWithPowrRef($db, $fkSoc, $sortfield = 'p.ref', $sortorder = 
  * @param int    $lineId
  * @return array|false
  */
-function getProductWithPowrRefByLineId($db, $fkSoc, $lineId)
+function getProductWithEklorRefByLineId($db, $fkSoc, $lineId)
 {
 	$sql  = "SELECT pfp.rowid AS pfp_rowid, pfp.fk_product, p.ref AS ref_product, p.label AS label_product, pfp.ref_fourn, pfp.unitprice AS unitprice, pfp.quantity, ef.supplier_url";
 	$sql .= " FROM ".MAIN_DB_PREFIX."product_fournisseur_price AS pfp";
@@ -710,7 +710,7 @@ function getSupplierDefaultVatRate($db, $supplierId)
 		return (float) $vatCache[$supplierId];
 	}
 
-	$configuredVatRaw = getDolGlobalString('POWRSYNC_DEFAULT_VAT_RATE');
+	$configuredVatRaw = getDolGlobalString('EKLORSYNC_DEFAULT_VAT_RATE');
 	if (trim((string) $configuredVatRaw) === '') {
 		return null;
 	}
@@ -735,26 +735,26 @@ function syncOneSupplierProductPrice($db, $scraper, $productRow, $fkSoc, $user, 
 {
 	global $langs;
 
-	$powrRef      = $productRow['ref_fourn'];
+	$eklorRef      = $productRow['ref_fourn'];
 	$url          = !empty($productRow['supplier_url']) ? $productRow['supplier_url'] : '';
 	$productId    = (int) $productRow['fk_product'];
 	$currentPrice = isset($productRow['unitprice']) ? (float) $productRow['unitprice'] : null;
 
 	if (empty($url) || !filter_var($url, FILTER_VALIDATE_URL)) {
-		$scraper->error = 'URL fournisseur non valide pour '.$powrRef;
-		insertPowrSyncLog($db, $productRow, $user, EklorScraper::LOG_ERROR, $currentPrice, null, $scraper->error);
+		$scraper->error = 'URL fournisseur non valide pour '.$eklorRef;
+		insertEklorSyncLog($db, $productRow, $user, EklorScraper::LOG_ERROR, $currentPrice, null, $scraper->error);
 		return -1;
 	}
 
-	$newPrice = $scraper->testConnectionAndGetPrice($login, $password, $url, $powrRef);
+	$newPrice = $scraper->testConnectionAndGetPrice($login, $password, $url, $eklorRef);
 
 	if ($newPrice === false) {
-		insertPowrSyncLog($db, $productRow, $user, EklorScraper::LOG_ERROR, $currentPrice, null, $scraper->error);
+		insertEklorSyncLog($db, $productRow, $user, EklorScraper::LOG_ERROR, $currentPrice, null, $scraper->error);
 		return -1;
 	}
 
 	if (abs($newPrice - $currentPrice) <= 0.001) {
-		insertPowrSyncLog($db, $productRow, $user, EklorScraper::LOG_UPTODATE, $currentPrice, $newPrice, '');
+		insertEklorSyncLog($db, $productRow, $user, EklorScraper::LOG_UPTODATE, $currentPrice, $newPrice, '');
 		return 2;
 	}
 
@@ -764,8 +764,8 @@ function syncOneSupplierProductPrice($db, $scraper, $productRow, $fkSoc, $user, 
 	$vatTx              = getSupplierDefaultVatRate($db, $fkSoc);
 
 	if ($vatTx === null) {
-		$scraper->error = $langs->trans('PowrSyncDefaultVatRateRequired');
-		insertPowrSyncLog($db, $productRow, $user, EklorScraper::LOG_ERROR, $currentPrice, null, $scraper->error);
+		$scraper->error = $langs->trans('EklorSyncDefaultVatRateRequired');
+		insertEklorSyncLog($db, $productRow, $user, EklorScraper::LOG_ERROR, $currentPrice, null, $scraper->error);
 		return -1;
 	}
 
@@ -773,7 +773,7 @@ function syncOneSupplierProductPrice($db, $scraper, $productRow, $fkSoc, $user, 
 	$productFournisseur->id         = $productId;
 	$productFournisseur->fk_product = $productId;
 	$productFournisseur->fourn_id   = (int) $fkSoc;
-	$productFournisseur->ref_fourn  = $powrRef;
+	$productFournisseur->ref_fourn  = $eklorRef;
 	$productFournisseur->fourn_qty  = $qty;
 
 	if ($priceLineId > 0) {
@@ -788,7 +788,7 @@ function syncOneSupplierProductPrice($db, $scraper, $productRow, $fkSoc, $user, 
 	if ($fetchResult < 0) {
 		$productFournisseur->fk_product = $productId;
 		$productFournisseur->fourn_id   = (int) $fkSoc;
-		$productFournisseur->ref_fourn  = $powrRef;
+		$productFournisseur->ref_fourn  = $eklorRef;
 		$productFournisseur->fourn_qty  = $qty;
 	}
 
@@ -799,7 +799,7 @@ function syncOneSupplierProductPrice($db, $scraper, $productRow, $fkSoc, $user, 
 		'HT',
 		(int) $fkSoc,
 		$vatTx,
-		$powrRef,
+		$eklorRef,
 		0,
 		0,
 		0,
@@ -808,18 +808,18 @@ function syncOneSupplierProductPrice($db, $scraper, $productRow, $fkSoc, $user, 
 
 	if ($res < 0) {
 		$scraper->error = !empty($productFournisseur->error) ? $productFournisseur->error : $db->lasterror();
-		insertPowrSyncLog($db, $productRow, $user, EklorScraper::LOG_ERROR, $currentPrice, $newPrice, $scraper->error);
+		insertEklorSyncLog($db, $productRow, $user, EklorScraper::LOG_ERROR, $currentPrice, $newPrice, $scraper->error);
 		return -1;
 	}
 
-	$forceVatResult = forceSupplierPriceVatRate($db, $priceLineId, $productId, $fkSoc, $powrRef, $qty, $vatTx);
+	$forceVatResult = forceSupplierPriceVatRate($db, $priceLineId, $productId, $fkSoc, $eklorRef, $qty, $vatTx);
 	if ($forceVatResult < 0) {
 		$scraper->error = $db->lasterror();
-		insertPowrSyncLog($db, $productRow, $user, EklorScraper::LOG_ERROR, $currentPrice, $newPrice, $scraper->error);
+		insertEklorSyncLog($db, $productRow, $user, EklorScraper::LOG_ERROR, $currentPrice, $newPrice, $scraper->error);
 		return -1;
 	}
 
-	insertPowrSyncLog($db, $productRow, $user, EklorScraper::LOG_OK, $currentPrice, $newPrice, '');
+	insertEklorSyncLog($db, $productRow, $user, EklorScraper::LOG_OK, $currentPrice, $newPrice, '');
 	return 1;
 }
 
@@ -830,12 +830,12 @@ function syncOneSupplierProductPrice($db, $scraper, $productRow, $fkSoc, $user, 
  * @param int    $priceLineId
  * @param int    $productId
  * @param int    $fkSoc
- * @param string $powrRef
+ * @param string $eklorRef
  * @param float  $qty
  * @param float  $vatTx
  * @return int
  */
-function forceSupplierPriceVatRate($db, $priceLineId, $productId, $fkSoc, $powrRef, $qty, $vatTx)
+function forceSupplierPriceVatRate($db, $priceLineId, $productId, $fkSoc, $eklorRef, $qty, $vatTx)
 {
 	$priceLineId = (int) $priceLineId;
 
@@ -844,7 +844,7 @@ function forceSupplierPriceVatRate($db, $priceLineId, $productId, $fkSoc, $powrR
 		$sqlFind .= " FROM ".MAIN_DB_PREFIX."product_fournisseur_price AS pfp";
 		$sqlFind .= " WHERE pfp.fk_product = ".((int) $productId);
 		$sqlFind .= " AND pfp.fk_soc = ".((int) $fkSoc);
-		$sqlFind .= " AND pfp.ref_fourn = '".$db->escape($powrRef)."'";
+		$sqlFind .= " AND pfp.ref_fourn = '".$db->escape($eklorRef)."'";
 		$sqlFind .= " AND pfp.quantity = ".price2num($qty);
 		$sqlFind .= " ORDER BY pfp.rowid DESC";
 		$sqlFind .= " LIMIT 1";
@@ -885,7 +885,7 @@ function forceSupplierPriceVatRate($db, $priceLineId, $productId, $fkSoc, $powrR
  * @param string $message
  * @return void
  */
-function insertPowrSyncLog($db, $productRow, $user, $status, $oldPrice, $newPrice, $message)
+function insertEklorSyncLog($db, $productRow, $user, $status, $oldPrice, $newPrice, $message)
 {
 	static $availableColumns = null;
 
