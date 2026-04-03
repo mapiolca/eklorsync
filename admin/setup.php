@@ -68,6 +68,12 @@ if ($action == 'testconnect') {
 		$tempDir = !empty($conf->eklorsync->dir_temp) ? $conf->eklorsync->dir_temp : sys_get_temp_dir();
 		$scraper = new EklorScraper($tempDir);
 
+		$wcApiKey    = getDolGlobalString('EKLORSYNC_WC_API_KEY');
+		$wcApiSecret = getDolGlobalString('EKLORSYNC_WC_API_SECRET');
+		if (!empty($wcApiKey) && !empty($wcApiSecret)) {
+			$scraper->setWooCommerceApiCredentials($wcApiKey, dol_decode($wcApiSecret));
+		}
+
 		$password = dol_decode($passEnc);
 		$price = $scraper->testConnectionAndGetPrice($login, $password, $testUrl, 'TEST');
 		$loginState = method_exists($scraper, 'getLoginState') ? $scraper->getLoginState() : 'none';
@@ -101,6 +107,9 @@ if ($action == 'update') {
 		$defaultVatRate = 100;
 	}
 
+	$wcApiKey    = GETPOST('EKLORSYNC_WC_API_KEY', 'alphanohtml');
+	$wcApiSecret = GETPOST('EKLORSYNC_WC_API_SECRET', 'alphanohtml');
+
 	dolibarr_set_const($db, 'EKLORSYNC_LOGIN', $login, 'chaine', 0, '', $conf->entity);
 
 	// Ne mettre à jour le mot de passe que s'il est saisi (évite d'effacer par erreur)
@@ -111,6 +120,13 @@ if ($action == 'update') {
 	dolibarr_set_const($db, 'EKLORSYNC_SUPPLIER_ID', (int) $supplierId, 'chaine', 0, '', $conf->entity);
 	dolibarr_set_const($db, 'EKLORSYNC_DELAY_MS', max(500, (int) $delayMs), 'chaine', 0, '', $conf->entity);
 	dolibarr_set_const($db, 'EKLORSYNC_DEFAULT_VAT_RATE', (string) $defaultVatRate, 'chaine', 0, '', $conf->entity);
+
+	if (!empty($wcApiKey)) {
+		dolibarr_set_const($db, 'EKLORSYNC_WC_API_KEY', $wcApiKey, 'chaine', 0, '', $conf->entity);
+	}
+	if (!empty($wcApiSecret)) {
+		dolibarr_set_const($db, 'EKLORSYNC_WC_API_SECRET', dol_encode($wcApiSecret), 'chaine', 0, '', $conf->entity);
+	}
 
 	setEventMessages($langs->trans('SetupSaved'), null, 'mesgs');
 	header('Location: '.$_SERVER['PHP_SELF']);
@@ -150,6 +166,8 @@ $currentSupplierId = getDolGlobalInt('EKLORSYNC_SUPPLIER_ID');
 $currentDelayMs    = getDolGlobalInt('EKLORSYNC_DELAY_MS') ?: 1000;
 $currentDefaultVatRate = getDolGlobalString('EKLORSYNC_DEFAULT_VAT_RATE');
 $hasPassword       = !empty(getDolGlobalString('EKLORSYNC_PASSWORD'));
+$currentWcApiKey   = getDolGlobalString('EKLORSYNC_WC_API_KEY');
+$hasWcApiSecret    = !empty(getDolGlobalString('EKLORSYNC_WC_API_SECRET'));
 
 print '<form method="POST" action="'.$_SERVER['PHP_SELF'].'">';
 print '<input type="hidden" name="token" value="'.newToken().'">';
@@ -178,6 +196,29 @@ print '<td>';
 print '<input type="password" name="EKLORSYNC_PASSWORD" class="minwidth300" value="" autocomplete="new-password" placeholder="'.($hasPassword ? '(mot de passe enregistré - laisser vide pour ne pas changer)' : '').'">';
 print '</td>';
 print '<td class="opacitymedium">'.$langs->trans('EklorConnectPasswordHelp').'</td>';
+print '</tr>';
+
+// Séparateur API REST
+print '<tr class="liste_titre">';
+print '<td colspan="3">API WooCommerce REST <span style="font-weight:normal;font-size:0.85em">(recommandé — contourne le reCAPTCHA et Tiger Protect)</span></td>';
+print '</tr>';
+
+// WC Consumer Key
+print '<tr class="oddeven">';
+print '<td>Consumer Key</td>';
+print '<td>';
+print '<input type="text" name="EKLORSYNC_WC_API_KEY" class="minwidth300" value="'.dol_escape_htmltag($currentWcApiKey).'" autocomplete="off" placeholder="ck_...">';
+print '</td>';
+print '<td class="opacitymedium">Clé API WooCommerce (lecture seule). Générer dans : WooCommerce → Réglages → Avancé → REST API.</td>';
+print '</tr>';
+
+// WC Consumer Secret
+print '<tr class="oddeven">';
+print '<td>Consumer Secret</td>';
+print '<td>';
+print '<input type="password" name="EKLORSYNC_WC_API_SECRET" class="minwidth300" value="" autocomplete="new-password" placeholder="'.($hasWcApiSecret ? '(secret enregistré - laisser vide pour ne pas changer)' : 'cs_...').'">';
+print '</td>';
+print '<td class="opacitymedium">Secret API WooCommerce. Laisser vide pour ne pas modifier.</td>';
 print '</tr>';
 
 print '<tr class="liste_titre">';

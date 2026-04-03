@@ -37,6 +37,12 @@ $fkSoc = getDolGlobalInt('EKLORSYNC_SUPPLIER_ID');
 $email = getDolGlobalString('EKLORSYNC_LOGIN');
 $pwd   = getDolGlobalString('EKLORSYNC_PASSWORD');
 
+$wcApiKey    = getDolGlobalString('EKLORSYNC_WC_API_KEY');
+$wcApiSecEnc = getDolGlobalString('EKLORSYNC_WC_API_SECRET');
+if (!empty($wcApiKey) && !empty($wcApiSecEnc)) {
+	$scraper->setWooCommerceApiCredentials($wcApiKey, dol_decode($wcApiSecEnc));
+}
+
 $form = new Form($db);
 
 $allowedSortFields = array('p.ref', 'p.label', 'pfp.ref_fourn', 'pfp.unitprice', 'lastlog.new_price', 'lastlog.datec', 'lastlog.status');

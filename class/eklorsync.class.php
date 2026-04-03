@@ -83,6 +83,12 @@ class EklorSync extends CommonObject
 		$tempDir = $conf->eklorsync->dir_temp ?: sys_get_temp_dir();
 		$scraper = new EklorScraper($tempDir);
 
+		$wcApiKey    = getDolGlobalString('EKLORSYNC_WC_API_KEY');
+		$wcApiSecEnc = getDolGlobalString('EKLORSYNC_WC_API_SECRET');
+		if (!empty($wcApiKey) && !empty($wcApiSecEnc)) {
+			$scraper->setWooCommerceApiCredentials($wcApiKey, dol_decode($wcApiSecEnc));
+		}
+
 		if ($scraper->login($email, $password) < 0) {
 			$this->error = 'Connexion EKLOR échouée : '.$scraper->error;
 			dol_syslog('EklorSync: '.$this->error, LOG_WARNING);

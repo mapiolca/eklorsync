@@ -21,6 +21,8 @@ class EklorScraper
 	private $userAgent    = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/120.0.0.0 Safari/537.36';
 	private $lastCsrfRaw  = '';
 	private $loginState   = 'none';
+	private $wcApiKey     = '';
+	private $wcApiSecret  = '';
 
 	public $error = '';
 
@@ -39,6 +41,18 @@ class EklorScraper
 	public function __construct($tempDir = '/tmp')
 	{
 		$this->cookieFile = $tempDir.'/eklorsync_'.md5(__FILE__).'.txt';
+	}
+
+	/**
+	 * Configure les clés API WooCommerce REST (Consumer Key + Secret).
+	 * Si renseignées, le login et la récupération de prix passent par l'API REST
+	 * au lieu du scraping HTML — contourne le reCAPTCHA et Tiger Protect.
+	 * Créer les clés dans : WooCommerce → Réglages → Avancé → REST API (lecture seule).
+	 */
+	public function setWooCommerceApiCredentials($key, $secret)
+	{
+		$this->wcApiKey    = $key;
+		$this->wcApiSecret = $secret;
 	}
 
 	private function initCurl()
@@ -105,14 +119,21 @@ class EklorScraper
 	}
 
 	/**
-	 * Authentification WordPress via /wp-login.php
-	 * Contourne le reCAPTCHA iThemes Security présent sur le formulaire WooCommerce /mon-compte/.
+	 * Authentification WooCommerce.
+	 * Si des clés API REST sont configurées (setWooCommerceApiCredentials), les valide
+	 * via /wp-json/wc/v3/ — pas de formulaire, pas de reCAPTCHA, pas de Tiger Protect.
+	 * Sinon, tente le login HTML via /wp-login.php.
 	 * Retourne 1 si succès, -1 si échec
 	 */
 	public function login($email, $password)
 	{
 		$this->debug('login() — début, user='.$email);
 		$this->loginState = 'none';
+
+		// Mode API REST : pas besoin de cookie, on valide les clés directement
+		if (!empty($this->wcApiKey) && !empty($this->wcApiSecret)) {
+			return $this->loginViaRestApi();
+		}
 
 		// Vérifie si on est déjà connecté via les cookies existants
 		if ($this->isSessionActive()) {
@@ -227,6 +248,48 @@ class EklorScraper
 	}
 
 	/**
+	 * Valide les clés API WooCommerce REST en appelant /wp-json/wc/v3/products?per_page=1.
+	 * Retourne 1 si les clés sont valides, -1 sinon.
+	 */
+	private function loginViaRestApi()
+	{
+		$this->initCurl();
+		$testUrl = $this->baseUrl.'/wp-json/wc/v3/products?per_page=1';
+		$this->debug('loginViaRestApi() — GET '.$testUrl);
+
+		curl_setopt_array($this->ch, array(
+			CURLOPT_URL            => $testUrl,
+			CURLOPT_HTTPGET        => true,
+			CURLOPT_USERPWD        => $this->wcApiKey.':'.$this->wcApiSecret,
+			CURLOPT_HTTPAUTH       => CURLAUTH_BASIC,
+			CURLOPT_FOLLOWLOCATION => true,
+		));
+
+		$body     = curl_exec($this->ch);
+		$httpCode = curl_getinfo($this->ch, CURLINFO_HTTP_CODE);
+		$this->debug('loginViaRestApi() → HTTP '.$httpCode);
+
+		if (curl_errno($this->ch)) {
+			$this->error = 'REST API connexion impossible : '.curl_error($this->ch);
+			$this->loginState = 'login_failed';
+			return -1;
+		}
+		if ($httpCode === 200) {
+			$this->loggedIn   = true;
+			$this->loginState = 'login_ok';
+			$this->debug('loginViaRestApi() — clés valides');
+			return 1;
+		}
+
+		$json = json_decode($body, true);
+		$msg  = isset($json['message']) ? $json['message'] : 'HTTP '.$httpCode;
+		$this->error      = 'REST API auth échouée : '.$msg;
+		$this->loginState = 'login_failed';
+		$this->debug('loginViaRestApi() — échec : '.$this->error);
+		return -1;
+	}
+
+	/**
 	 * EN: Return latest login state (none|already_connected|login_ok|login_failed).
 	 * FR: Retourne l'état du dernier login (none|already_connected|login_ok|login_failed).
 	 *
@@ -331,6 +394,11 @@ class EklorScraper
 			return false;
 		}
 
+		// Mode API REST : recherche par SKU, plus fiable que le scraping HTML
+		if (!empty($this->wcApiKey) && !empty($this->wcApiSecret)) {
+			return $this->getPriceViaRestApi($eklorRef);
+		}
+
 		if (empty($url)) {
 			$this->error = 'URL produit non renseignée pour '.$eklorRef;
 			$this->debug('ERREUR : URL manquante');
@@ -367,6 +435,65 @@ class EklorScraper
 		}
 
 		return $this->parsePrice($html, $eklorRef);
+	}
+
+	/**
+	 * Récupère le prix HT d'un produit via l'API WooCommerce REST (recherche par SKU).
+	 * L'API retourne le prix TTC dans le champ "price" ; on retourne ce float directement.
+	 *
+	 * @param  string $sku  Référence fournisseur (= SKU WooCommerce)
+	 * @return float|false
+	 */
+	private function getPriceViaRestApi($sku)
+	{
+		usleep($this->requestDelay);
+
+		$apiUrl = $this->baseUrl.'/wp-json/wc/v3/products?sku='.urlencode($sku);
+		$this->debug('getPriceViaRestApi() — GET '.$apiUrl);
+
+		curl_setopt_array($this->ch, array(
+			CURLOPT_URL      => $apiUrl,
+			CURLOPT_HTTPGET  => true,
+			CURLOPT_USERPWD  => $this->wcApiKey.':'.$this->wcApiSecret,
+			CURLOPT_HTTPAUTH => CURLAUTH_BASIC,
+		));
+
+		$body     = curl_exec($this->ch);
+		$httpCode = curl_getinfo($this->ch, CURLINFO_HTTP_CODE);
+		$this->debug('getPriceViaRestApi() → HTTP '.$httpCode.' — body length='.strlen($body));
+
+		if (curl_errno($this->ch)) {
+			$this->error = 'REST API cURL erreur ref '.$sku.' : '.curl_error($this->ch);
+			return false;
+		}
+		if ($httpCode === 404) {
+			$this->error = 'Référence '.$sku.' introuvable via REST API (404)';
+			return false;
+		}
+		if ($httpCode !== 200) {
+			$this->error = 'REST API erreur ref '.$sku.' : HTTP '.$httpCode;
+			return false;
+		}
+
+		$products = json_decode($body, true);
+		if (!is_array($products) || empty($products)) {
+			$this->error = 'Référence '.$sku.' introuvable (aucun produit retourné par l\'API)';
+			$this->debug('getPriceViaRestApi() — aucun produit pour SKU='.$sku);
+			return false;
+		}
+
+		$product = $products[0];
+		// "price" = prix courant (promo ou normal), "regular_price" = prix normal
+		$priceStr = isset($product['price']) ? $product['price'] : '';
+		if ($priceStr === '' || $priceStr === null) {
+			$this->error = 'Prix absent dans la réponse API pour '.$sku;
+			$this->debug('getPriceViaRestApi() — champ price vide pour SKU='.$sku);
+			return false;
+		}
+
+		$price = (float) $priceStr;
+		$this->debug('getPriceViaRestApi() — SKU='.$sku.' → price='.$price);
+		return $price > 0 ? $price : false;
 	}
 
 	/**
