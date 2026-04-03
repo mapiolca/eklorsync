@@ -80,8 +80,8 @@ powrsync/
 ├── class/
 │   └── eklorscraper.class.php      ← Scraper + logique métier
 ├── sql/
-│   ├── llx_powrsync_log.sql              ← Table historique
-│   └── llx_powrsync_log.key.sql          ← Index
+│   ├── llx_eklorsync_log.sql              ← Table historique
+│   └── llx_eklorsync_log.key.sql          ← Index
 ├── admin/
 │   └── setup.php                         ← Page de configuration
 ├── sync.php                              ← Page principale (liste + actions)
@@ -96,7 +96,7 @@ powrsync/
 
 ## Journalisation
 
-Chaque synchronisation est enregistrée dans `llx_powrsync_log` avec :
+Chaque synchronisation est enregistrée dans `llx_eklorsync_log` avec :
 - Ancien prix / nouveau prix
 - Statut : mis à jour (1), déjà à jour (2), erreur (-1), introuvable (-2)
 - Message d'erreur si applicable

@@ -127,7 +127,7 @@ class modEklorSync extends DolibarrModules
 			'type'     => 'left',
 			'titre'    => 'Historique des syncs',
 			'mainmenu' => 'products',
-			'leftmenu' => 'powrsync_log',
+			'leftmenu' => 'eklorsync_log',
 			'url'      => '/powrsync/sync_history.php',
 			'langs'    => 'powrsync@powrsync',
 			'position' => 902,
@@ -146,7 +146,7 @@ class modEklorSync extends DolibarrModules
 
 		// EN: Create synchronization log table if missing at module activation.
 		// FR: Crée la table de logs de synchronisation si elle n'existe pas à l'activation du module.
-		$sql = "CREATE TABLE IF NOT EXISTS ".MAIN_DB_PREFIX."powrsync_log (";
+		$sql = "CREATE TABLE IF NOT EXISTS ".MAIN_DB_PREFIX."eklorsync_log (";
 		$sql .= " rowid INTEGER AUTO_INCREMENT PRIMARY KEY,";
 		$sql .= " fk_product INTEGER NOT NULL,";
 		$sql .= " datec DATETIME NOT NULL,";
@@ -154,9 +154,9 @@ class modEklorSync extends DolibarrModules
 		$sql .= " new_price DOUBLE(24,8) NULL,";
 		$sql .= " status VARCHAR(20) NOT NULL,";
 		$sql .= " message TEXT NULL,";
-		$sql .= " INDEX idx_powrsync_log_fk_product (fk_product),";
-		$sql .= " INDEX idx_powrsync_log_datec (datec),";
-		$sql .= " INDEX idx_powrsync_log_status (status)";
+		$sql .= " INDEX idx_eklorsync_log_fk_product (fk_product),";
+		$sql .= " INDEX idx_eklorsync_log_datec (datec),";
+		$sql .= " INDEX idx_eklorsync_log_status (status)";
 		$sql .= ") ENGINE=innodb";
 
 		$resql = $this->db->query($sql);

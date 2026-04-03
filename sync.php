@@ -151,7 +151,7 @@ if ($user->hasRight('powrsync', 'synclog', 'write')) {
 
 		// --- Logs de la session en cours (du plus récent au plus ancien) ---
 		$sqlLogs  = "SELECT l.ref_product, l.ref_fourn, l.old_price, l.new_price, l.status, l.message, l.datec";
-		$sqlLogs .= " FROM ".MAIN_DB_PREFIX."powrsync_log AS l";
+		$sqlLogs .= " FROM ".MAIN_DB_PREFIX."eklorsync_log AS l";
 		$sqlLogs .= " WHERE l.datec >= '".$db->idate($startTs)."'";
 		$sqlLogs .= " ORDER BY l.datec DESC, l.rowid DESC";
 
@@ -561,8 +561,8 @@ function getProductsWithPowrRef($db, $fkSoc, $sortfield = 'p.ref', $sortorder = 
 	$sql .= " LEFT JOIN ".MAIN_DB_PREFIX."product_fournisseur_price_extrafields AS ef ON ef.fk_object = pfp.rowid";
 	$sql .= " LEFT JOIN (";
 	$sql .= " SELECT l1.fk_product, l1.datec, l1.old_price, l1.new_price, l1.status, l1.message";
-	$sql .= " FROM ".MAIN_DB_PREFIX."powrsync_log AS l1";
-	$sql .= " INNER JOIN (SELECT fk_product, MAX(datec) AS maxdate FROM ".MAIN_DB_PREFIX."powrsync_log GROUP BY fk_product) AS l2 ON l2.fk_product = l1.fk_product AND l2.maxdate = l1.datec";
+	$sql .= " FROM ".MAIN_DB_PREFIX."eklorsync_log AS l1";
+	$sql .= " INNER JOIN (SELECT fk_product, MAX(datec) AS maxdate FROM ".MAIN_DB_PREFIX."eklorsync_log GROUP BY fk_product) AS l2 ON l2.fk_product = l1.fk_product AND l2.maxdate = l1.datec";
 	$sql .= " ) AS lastlog ON lastlog.fk_product = pfp.fk_product";
 	$sql .= " WHERE pfp.fk_soc = ".((int) $fkSoc);
 	$sql .= " AND pfp.entity IN (".getEntity('product').")";
@@ -668,9 +668,9 @@ function getProductWithPowrRefByLineId($db, $fkSoc, $lineId)
 function getLastLogsByProduct($db, $fkSoc)
 {
 	$sql  = "SELECT l.fk_product, l.datec, l.old_price, l.new_price, l.status, l.message";
-	$sql .= " FROM ".MAIN_DB_PREFIX."powrsync_log l";
+	$sql .= " FROM ".MAIN_DB_PREFIX."eklorsync_log l";
 	$sql .= " INNER JOIN (";
-	$sql .= " SELECT fk_product, MAX(datec) AS maxdate FROM ".MAIN_DB_PREFIX."powrsync_log GROUP BY fk_product";
+	$sql .= " SELECT fk_product, MAX(datec) AS maxdate FROM ".MAIN_DB_PREFIX."eklorsync_log GROUP BY fk_product";
 	$sql .= " ) last ON l.fk_product = last.fk_product AND l.datec = last.maxdate";
 
 	$resql  = $db->query($sql);
@@ -874,7 +874,7 @@ function forceSupplierPriceVatRate($db, $priceLineId, $productId, $fkSoc, $powrR
 }
 
 /**
- * Save one synchronization log row in llx_powrsync_log.
+ * Save one synchronization log row in llx_eklorsync_log.
  *
  * @param DoliDB $db
  * @param array  $productRow
@@ -891,7 +891,7 @@ function insertPowrSyncLog($db, $productRow, $user, $status, $oldPrice, $newPric
 
 	if ($availableColumns === null) {
 		$availableColumns = array();
-		$resql = $db->query("SHOW COLUMNS FROM ".MAIN_DB_PREFIX."powrsync_log");
+		$resql = $db->query("SHOW COLUMNS FROM ".MAIN_DB_PREFIX."eklorsync_log");
 		if ($resql) {
 			while ($obj = $db->fetch_object($resql)) {
 				$availableColumns[$obj->Field] = true;
@@ -956,7 +956,7 @@ function insertPowrSyncLog($db, $productRow, $user, $status, $oldPrice, $newPric
 		return;
 	}
 
-	$sql  = "INSERT INTO ".MAIN_DB_PREFIX."powrsync_log (".implode(', ', $fields).")";
+	$sql  = "INSERT INTO ".MAIN_DB_PREFIX."eklorsync_log (".implode(', ', $fields).")";
 	$sql .= " VALUES (".implode(', ', $values).")";
 
 	$db->query($sql);

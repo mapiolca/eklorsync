@@ -13,7 +13,7 @@ require_once DOL_DOCUMENT_ROOT.'/custom/powrsync/class/eklorscraper.class.php';
 class EklorSync extends CommonObject
 {
 	public $element       = 'powrsync';
-	public $table_element = 'powrsync_log';
+	public $table_element = 'eklorsync_log';
 	public $picto         = 'fa-sun';
 
 	/** Nom du fournisseur tel qu'enregistré dans Dolibarr (llx_societe.nom) */
@@ -371,7 +371,7 @@ class EklorSync extends CommonObject
 	// ─── Journal de synchronisation ────────────────────────────────────────
 
 	/**
-	 * Enregistre une ligne dans llx_powrsync_log
+	 * Enregistre une ligne dans llx_eklorsync_log
 	 *
 	 * @param  int    $productId
 	 * @param  string $powrRef
@@ -437,7 +437,7 @@ class EklorSync extends CommonObject
 			return;
 		}
 
-		$sql = "INSERT INTO ".MAIN_DB_PREFIX."powrsync_log (".implode(', ', $fields).")";
+		$sql = "INSERT INTO ".MAIN_DB_PREFIX."eklorsync_log (".implode(', ', $fields).")";
 		$sql .= " VALUES (".implode(', ', $values).")";
 
 		$this->db->query($sql);
@@ -457,7 +457,7 @@ class EklorSync extends CommonObject
 		$sql = "SELECT l.rowid, l.fk_product, l.ref_fourn,"
 			." l.old_price, l.new_price, ".$statusField." AS sync_status, l.message, l.datec,"
 			." p.ref AS product_ref, p.label AS product_label"
-			." FROM ".MAIN_DB_PREFIX."powrsync_log l"
+			." FROM ".MAIN_DB_PREFIX."eklorsync_log l"
 			." LEFT JOIN ".MAIN_DB_PREFIX."product p ON p.rowid = l.fk_product"
 			." WHERE l.entity IN (".getEntity('product').")"
 			." ORDER BY l.datec DESC"
@@ -485,7 +485,7 @@ class EklorSync extends CommonObject
 	}
 
 	/**
-	 * Returns available columns for powrsync_log table.
+	 * Returns available columns for eklorsync_log table.
 	 *
 	 * @return array
 	 */
@@ -496,7 +496,7 @@ class EklorSync extends CommonObject
 		}
 
 		$this->logColumns = array();
-		$resql = $this->db->query("SHOW COLUMNS FROM ".MAIN_DB_PREFIX."powrsync_log");
+		$resql = $this->db->query("SHOW COLUMNS FROM ".MAIN_DB_PREFIX."eklorsync_log");
 		if (!$resql) {
 			return $this->logColumns;
 		}

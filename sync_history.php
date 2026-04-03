@@ -65,7 +65,7 @@ if (!in_array($sortfield, $allowedSortFields, true)) {
 $sortorder = (strtoupper($sortorder) === 'ASC') ? 'ASC' : 'DESC';
 
 $availableColumns = array();
-$rescol = $db->query("SHOW COLUMNS FROM ".MAIN_DB_PREFIX."powrsync_log");
+$rescol = $db->query("SHOW COLUMNS FROM ".MAIN_DB_PREFIX."eklorsync_log");
 if ($rescol) {
 	while ($objcol = $db->fetch_object($rescol)) {
 		$availableColumns[$objcol->Field] = true;
@@ -125,7 +125,7 @@ if ($hasRefFournColumn) {
 }
 $sqlselect .= ", ".$supplierUrlSelect." AS supplier_url";
 
-$sqlfrom = " FROM ".MAIN_DB_PREFIX."powrsync_log AS l";
+$sqlfrom = " FROM ".MAIN_DB_PREFIX."eklorsync_log AS l";
 $sqlfrom .= " LEFT JOIN ".MAIN_DB_PREFIX."product AS p ON p.rowid = l.fk_product";
 $sqlwhere = " WHERE 1 = 1";
 if ($hasEntityColumn) {
