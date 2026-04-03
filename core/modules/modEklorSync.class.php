@@ -98,10 +98,10 @@ class modEklorSync extends DolibarrModules
 			'titre'    => 'EKLOR Sync',
 			'prefix' => img_picto('', 'object_eklor@powrsync', 'class="pictofixedwidth valignmiddle"'),
 			'mainmenu' => 'products',
-			'leftmenu' => 'powrsync',
+			'leftmenu' => 'eklorsync',
 			'url'      => '/powrsync/sync.php',
 			'langs'    => 'eklorsync@powrsync',
-			'position' => 900,
+			'position' => 910,
 			'enabled'  => 'isModEnabled("powrsync")',
 			'perms'    => '$user->hasRight("powrsync", "synclog", "read")',
 			'target'   => '',
@@ -109,7 +109,7 @@ class modEklorSync extends DolibarrModules
 		);
 
 		$this->menu[$r++] = array(
-			'fk_menu'  => 'fk_mainmenu=products,fk_leftmenu=powrsync',
+			'fk_menu'  => 'fk_mainmenu=products,fk_leftmenu=eklorsync',
 			'type'     => 'left',
 			'titre'    => 'Tableau de bord',
 			'mainmenu' => 'products',
@@ -123,7 +123,7 @@ class modEklorSync extends DolibarrModules
 		);
 
 		$this->menu[$r++] = array(
-			'fk_menu'  => 'fk_mainmenu=products,fk_leftmenu=powrsync',
+			'fk_menu'  => 'fk_mainmenu=products,fk_leftmenu=eklorsync',
 			'type'     => 'left',
 			'titre'    => 'Historique des syncs',
 			'mainmenu' => 'products',
