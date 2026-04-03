@@ -1,0 +1,73 @@
+# Module PowrSync - English translations
+
+PowrSyncSetup=POwR Connect Setup
+PowrConnectCredentials=Login credentials
+PowrConnectEmail=POwR Connect Email
+PowrConnectEmailHelp=Your login email for powr-connect.shop
+PowrConnectPassword=POwR Connect Password
+PowrConnectPasswordHelp=Leave empty to keep current password
+PowrConnectMapping=Supplier mapping
+PowrConnectSupplier=Dolibarr Supplier
+PowrConnectSupplierHelp=Select the POwR Connect supplier record in Dolibarr
+PowrSyncAdvanced=Advanced settings
+PowrSyncDelay=Delay between requests
+PowrSyncDelayHelp=Wait time between each product (500ms minimum to avoid overloading the site)
+PowrSyncDefaultVatRate=Default VAT rate
+PowrSyncDefaultVatRateHelp=VAT rate (excl. tax) applied on each supplier purchase price update.
+PowrSyncDefaultVatRateRequired=The "Default VAT rate" setting is required. Please configure it in PowrSync setup.
+PowrSyncConfigOk=Connected with account %s
+
+PowrSyncTestConnection=Connection test
+PowrSyncTestUrl=Test product URL
+PowrSyncTestUrlHelp=Paste a product URL from powr-connect.shop to verify the connection and price reading
+PowrSyncTestButton=Test connection
+
+PowrSyncTitle=POwR Connect Price Sync
+PowrSyncNotConfigured=The POwR Connect module is not yet configured.
+GoToSetup=Go to setup
+SyncAllPrices=Sync all prices
+PowrSyncConfirmAll=You are about to sync all POwR Connect supplier prices. This may take several minutes. Continue?
+PowrSyncDone=%s product(s) processed
+PowrSyncUpdated=Price updated for %s (ref. %s)
+PowrSyncUpToDate=Price already up to date for %s
+PowrSyncNoProducts=No products with a POwR Connect supplier reference found.
+PowrSyncProductCount=%s product(s) with POwR Connect reference
+PowrSyncProductNotFound=Product not found in POwR Connect list
+PowrSyncDbError=Database error
+
+PowrRef=POwR Connect Ref.
+CurrentBuyPrice=Current buy price
+LastSyncPrice=Last scraped price
+LastSync=Last sync
+Sync=Sync
+Never=Never
+
+PowrSyncLog=Sync history
+OldPrice=Old price
+NewPrice=New price
+Variation=Variation
+
+PowrLogUpdated=Updated
+PowrLogUpToDate=Up to date
+PowrLogError=Error
+
+PowrSyncSupplierUrlLabel=Supplier product URL
+PowrSyncSupplierUrlTooltip=Enter the URL leading to the supplier shop product page
+
+PowrSyncAboutPage=Information about the PowrSync module
+PowrSyncAboutGeneral=General information
+PowrSyncAboutVersion=Version
+PowrSyncAboutFamily=Family
+PowrSyncAboutDescription=Description
+PowrSyncAboutMaintainer=Maintainer
+PowrSyncAboutResources=Resources
+PowrSyncAboutDocumentation=Documentation
+PowrSyncAboutSupport=Support
+PowrSyncAboutContact=Contact
+PowrSyncAbout=About PowrSync
+PowrSyncAboutDocumentationLink=Read the README file
+PowrSyncAboutSupportValue=Contact your integrator for support.
+
+PowrSyncVisibleColumns=Visible columns
+PowrSyncRecordsPerPage=Records per page
+PowrSyncSyncAllProducts=Synchronize all products

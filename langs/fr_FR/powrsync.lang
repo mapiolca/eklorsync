@@ -1,0 +1,73 @@
+# Module PowrSync - Traductions françaises
+
+PowrSyncSetup=Configuration POwR Connect
+PowrConnectCredentials=Identifiants de connexion
+PowrConnectEmail=Email POwR Connect
+PowrConnectEmailHelp=Votre email de connexion au webshop powr-connect.shop
+PowrConnectPassword=Mot de passe POwR Connect
+PowrConnectPasswordHelp=Laisser vide pour conserver le mot de passe actuel
+PowrConnectMapping=Association fournisseur
+PowrConnectSupplier=Fournisseur Dolibarr
+PowrConnectSupplierHelp=Sélectionner la fiche fournisseur POwR Connect dans Dolibarr
+PowrSyncAdvanced=Paramètres avancés
+PowrSyncDelay=Délai entre requêtes
+PowrSyncDelayHelp=Temps d'attente entre chaque produit (500ms minimum pour ne pas surcharger le site)
+PowrSyncDefaultVatRate=Taux TVA par défaut
+PowrSyncDefaultVatRateHelp=Taux de TVA HT appliqué lors de chaque mise à jour de prix d'achat fournisseur.
+PowrSyncDefaultVatRateRequired=Le paramètre "Taux TVA par défaut" est obligatoire. Veuillez le renseigner dans la configuration PowrSync.
+PowrSyncConfigOk=Connecté avec le compte %s
+
+PowrSyncTestConnection=Test de connexion
+PowrSyncTestUrl=URL produit de test
+PowrSyncTestUrlHelp=Collez l'URL d'un produit sur powr-connect.shop pour vérifier la connexion et la lecture du prix
+PowrSyncTestButton=Tester la connexion
+
+PowrSyncTitle=Synchronisation prix POwR Connect
+PowrSyncNotConfigured=Le module POwR Connect n'est pas encore configuré.
+GoToSetup=Accéder à la configuration
+SyncAllPrices=Synchroniser tous les prix
+PowrSyncConfirmAll=Vous allez lancer la synchronisation de tous les prix fournisseur POwR Connect. Cette opération peut prendre plusieurs minutes. Continuer ?
+PowrSyncDone=%s produit(s) traité(s)
+PowrSyncUpdated=Prix mis à jour pour %s (réf. %s)
+PowrSyncUpToDate=Prix déjà à jour pour %s
+PowrSyncNoProducts=Aucun produit avec une référence fournisseur POwR Connect trouvé.
+PowrSyncProductCount=%s produit(s) avec référence POwR Connect
+PowrSyncProductNotFound=Produit introuvable dans la liste POwR Connect
+PowrSyncDbError=Erreur base de données
+
+PowrRef=Réf. POwR Connect
+CurrentBuyPrice=Prix achat actuel
+LastSyncPrice=Dernier prix scrapé
+LastSync=Dernière synchro
+Sync=Synchroniser
+Never=Jamais
+
+PowrSyncLog=Historique des synchronisations
+OldPrice=Ancien prix
+NewPrice=Nouveau prix
+Variation=Variation
+
+PowrLogUpdated=Mis à jour
+PowrLogUpToDate=À jour
+PowrLogError=Erreur
+
+PowrSyncSupplierUrlLabel=URL produit fournisseur
+PowrSyncSupplierUrlTooltip=Saisir l'URL menant à la fiche produit du shop fournisseur
+
+PowrSyncAboutPage=Informations sur le module PowrSync
+PowrSyncAboutGeneral=Informations générales
+PowrSyncAboutVersion=Version
+PowrSyncAboutFamily=Famille
+PowrSyncAboutDescription=Description
+PowrSyncAboutMaintainer=Mainteneur
+PowrSyncAboutResources=Ressources
+PowrSyncAboutDocumentation=Documentation
+PowrSyncAboutSupport=Support
+PowrSyncAboutContact=Contact
+PowrSyncAbout=À propos de PowrSync
+PowrSyncAboutDocumentationLink=Lire le fichier README
+PowrSyncAboutSupportValue=Contactez votre intégrateur pour le support.
+
+PowrSyncVisibleColumns=Colonnes visibles
+PowrSyncRecordsPerPage=Enregistrements par page
+PowrSyncSyncAllProducts=Synchroniser tous les produits

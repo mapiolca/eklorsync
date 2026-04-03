@@ -1,0 +1,25 @@
+# Module PowrSync - Traducciones en español
+
+PowrSyncSupplierUrlLabel=URL del producto del proveedor
+PowrSyncSupplierUrlTooltip=Introduzca la URL de la ficha de producto en la tienda del proveedor
+PowrSyncDefaultVatRate=Tasa de IVA predeterminada
+PowrSyncDefaultVatRateHelp=Tasa de IVA (sin impuestos) aplicada en cada actualización del precio de compra del proveedor.
+PowrSyncDefaultVatRateRequired=El ajuste \"Tasa de IVA predeterminada\" es obligatorio. Configúrelo en la configuración de PowrSync.
+
+PowrSyncAboutPage=Información sobre el módulo PowrSync
+PowrSyncAboutGeneral=Información general
+PowrSyncAboutVersion=Versión
+PowrSyncAboutFamily=Familia
+PowrSyncAboutDescription=Descripción
+PowrSyncAboutMaintainer=Mantenedor
+PowrSyncAboutResources=Recursos
+PowrSyncAboutDocumentation=Documentación
+PowrSyncAboutSupport=Soporte
+PowrSyncAboutContact=Contacto
+PowrSyncAbout=Acerca de PowrSync
+PowrSyncAboutDocumentationLink=Leer el archivo README
+PowrSyncAboutSupportValue=Contacte con su integrador para obtener soporte.
+
+PowrSyncVisibleColumns=Columnas visibles
+PowrSyncRecordsPerPage=Registros por página
+PowrSyncSyncAllProducts=Sincronizar todos los productos

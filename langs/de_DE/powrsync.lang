@@ -1,0 +1,25 @@
+# Module PowrSync - Deutsche Übersetzungen
+
+PowrSyncSupplierUrlLabel=URL des Lieferantenprodukts
+PowrSyncSupplierUrlTooltip=Geben Sie die URL zur Produktseite im Lieferanten-Shop ein
+PowrSyncDefaultVatRate=Standard-Mehrwertsteuersatz
+PowrSyncDefaultVatRateHelp=Mehrwertsteuersatz (netto), der bei jeder Aktualisierung des Lieferanten-Einkaufspreises angewendet wird.
+PowrSyncDefaultVatRateRequired=Die Einstellung „Standard-Mehrwertsteuersatz“ ist erforderlich. Bitte in der PowrSync-Konfiguration ausfüllen.
+
+PowrSyncAboutPage=Informationen über das PowrSync-Modul
+PowrSyncAboutGeneral=Allgemeine Informationen
+PowrSyncAboutVersion=Version
+PowrSyncAboutFamily=Familie
+PowrSyncAboutDescription=Beschreibung
+PowrSyncAboutMaintainer=Betreuer
+PowrSyncAboutResources=Ressourcen
+PowrSyncAboutDocumentation=Dokumentation
+PowrSyncAboutSupport=Support
+PowrSyncAboutContact=Kontakt
+PowrSyncAbout=Über PowrSync
+PowrSyncAboutDocumentationLink=README-Datei lesen
+PowrSyncAboutSupportValue=Kontaktieren Sie Ihren Integrator für den Support.
+
+PowrSyncVisibleColumns=Sichtbare Spalten
+PowrSyncRecordsPerPage=Einträge pro Seite
+PowrSyncSyncAllProducts=Alle Produkte synchronisieren
