@@ -105,8 +105,8 @@ class EklorScraper
 	}
 
 	/**
-	 * Authentification WooCommerce via /mon-compte/profil/
-	 * Le nonce WooCommerce est extrait dynamiquement du formulaire de connexion.
+	 * Authentification WordPress via /wp-login.php
+	 * Contourne le reCAPTCHA iThemes Security présent sur le formulaire WooCommerce /mon-compte/.
 	 * Retourne 1 si succès, -1 si échec
 	 */
 	public function login($email, $password)
@@ -122,67 +122,44 @@ class EklorScraper
 
 		$this->initCurl();
 
-		// Étape 1 : GET /mon-compte/profil/ pour récupérer le nonce WooCommerce
-		$loginUrl = $this->baseUrl.'/mon-compte/profil/';
-		$this->debug('GET '.$loginUrl.' (pour récupérer le nonce WooCommerce)');
-		curl_setopt($this->ch, CURLOPT_URL, $loginUrl);
+		// Étape 1 : GET /wp-login.php pour poser le cookie wordpress_test_cookie
+		$wpLoginUrl = $this->baseUrl.'/wp-login.php';
+		$this->debug('GET '.$wpLoginUrl.' (pour poser le test cookie WordPress)');
+		curl_setopt($this->ch, CURLOPT_URL, $wpLoginUrl);
 		curl_setopt($this->ch, CURLOPT_HTTPGET, true);
-		$html = curl_exec($this->ch);
+		curl_exec($this->ch);
 
 		if (curl_errno($this->ch)) {
 			$this->error = 'Connexion impossible : '.curl_error($this->ch);
-			$this->debug('ERREUR cURL GET /mon-compte/profil/ : '.$this->error);
+			$this->debug('ERREUR cURL GET /wp-login.php : '.$this->error);
 			return -1;
 		}
-		$this->debug('GET /mon-compte/profil/ OK, HTML length='.strlen($html).' bytes');
+		$this->debug('GET /wp-login.php OK');
 
-		// Étape 2 : extraire l'action du formulaire et les champs cachés (nonce WooCommerce, etc.)
-		$formConfig = $this->extractLoginFormConfig($html);
-		$formNotFound = empty($formConfig['action']) && empty($formConfig['hidden']);
-		if ($formNotFound) {
-			// Si le formulaire de connexion est absent, la session peut déjà être active
-			$this->debug('Formulaire de connexion absent sur /mon-compte/profil/, vérification session...');
-			if ($this->isSessionActive()) {
-				$this->debug('Session confirmée, skip login POST');
-				$this->loginState = 'already_connected';
-				return 1;
-			}
-			$this->loggedIn = true;
-			$this->loginState = 'already_connected';
-			$this->debug('Formulaire absent, session supposée active — continuation');
-			return 1;
-		}
-
-		// L'action du formulaire WooCommerce est vide (POST vers la même URL)
-		$postUrl = $formConfig['action'];
-		if (empty($postUrl)) {
-			$postUrl = $loginUrl;
-		}
-
-		$postFields = $formConfig['hidden'];
-		if (!is_array($postFields)) {
-			$postFields = array();
-		}
-
-		// Champs d'identification WooCommerce
-		$postFields['username']   = $email;
-		$postFields['password']   = $password;
-		$postFields['rememberme'] = 'forever';
-		$postFields['login']      = 'Log in'; // valeur du bouton submit WooCommerce
-
+		// Étape 2 : POST /wp-login.php avec les champs natifs WordPress
+		// (pas de reCAPTCHA sur cet endpoint contrairement au formulaire WooCommerce)
 		usleep($this->requestDelay);
-		$this->debug('POST '.$postUrl.' avec username='.$email.', champs cachés='.count($formConfig['hidden']));
 
-		// WooCommerce renvoie un 302 vers /mon-compte/ en cas de succès
+		$postFields = array(
+			'log'         => $email,
+			'pwd'         => $password,
+			'wp-submit'   => 'Se connecter',
+			'redirect_to' => $this->baseUrl.'/mon-compte/',
+			'testcookie'  => '1',
+			'rememberme'  => 'forever',
+		);
+
+		$this->debug('POST '.$wpLoginUrl.' avec log='.$email);
+
 		curl_setopt($this->ch, CURLOPT_FOLLOWLOCATION, false);
 		curl_setopt($this->ch, CURLOPT_HEADER, true);
 		curl_setopt($this->ch, CURLOPT_HTTPHEADER, array(
 			'Content-Type: application/x-www-form-urlencoded',
 			'Origin: '.$this->baseUrl,
-			'Referer: '.$loginUrl,
+			'Referer: '.$wpLoginUrl,
 		));
 		curl_setopt_array($this->ch, array(
-			CURLOPT_URL        => $postUrl,
+			CURLOPT_URL        => $wpLoginUrl,
 			CURLOPT_POST       => true,
 			CURLOPT_POSTFIELDS => http_build_query($postFields),
 		));
@@ -206,8 +183,8 @@ class EklorScraper
 			return -1;
 		}
 
-		// WooCommerce renvoie 302 vers /mon-compte/ en cas de succès
-		// Vérifier aussi la présence du cookie wordpress_logged_in_*
+		// WordPress renvoie 302 vers redirect_to en cas de succès
+		// Vérifier la présence du cookie wordpress_logged_in_*
 		if ($httpCode === 302 || ($httpCode >= 200 && $httpCode < 400)) {
 			if (file_exists($this->cookieFile)) {
 				$cookieContent = file_get_contents($this->cookieFile);
