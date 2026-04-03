@@ -1,25 +1,25 @@
-# Module PowrSync - Traduzioni italiane
+# Module EklorSync - Traduzioni italiane
 
-PowrSyncSupplierUrlLabel=URL del prodotto fornitore
-PowrSyncSupplierUrlTooltip=Inserire l'URL della scheda prodotto nello shop del fornitore
-PowrSyncDefaultVatRate=Aliquota IVA predefinita
-PowrSyncDefaultVatRateHelp=Aliquota IVA (imponibile) applicata a ogni aggiornamento del prezzo di acquisto fornitore.
-PowrSyncDefaultVatRateRequired=L'impostazione \"Aliquota IVA predefinita\" è obbligatoria. Configurarla nella configurazione PowrSync.
+EklorSyncSupplierUrlLabel=URL del prodotto fornitore
+EklorSyncSupplierUrlTooltip=Inserire l'URL della scheda prodotto nello shop del fornitore
+EklorSyncDefaultVatRate=Aliquota IVA predefinita
+EklorSyncDefaultVatRateHelp=Aliquota IVA (imponibile) applicata a ogni aggiornamento del prezzo di acquisto fornitore.
+EklorSyncDefaultVatRateRequired=L'impostazione \"Aliquota IVA predefinita\" è obbligatoria. Configurarla nella configurazione EklorSync.
 
-PowrSyncAboutPage=Informazioni sul modulo PowrSync
-PowrSyncAboutGeneral=Informazioni generali
-PowrSyncAboutVersion=Versione
-PowrSyncAboutFamily=Famiglia
-PowrSyncAboutDescription=Descrizione
-PowrSyncAboutMaintainer=Manutentore
-PowrSyncAboutResources=Risorse
-PowrSyncAboutDocumentation=Documentazione
-PowrSyncAboutSupport=Supporto
-PowrSyncAboutContact=Contatto
-PowrSyncAbout=Informazioni su PowrSync
-PowrSyncAboutDocumentationLink=Leggere il file README
-PowrSyncAboutSupportValue=Contattare il proprio integratore per il supporto.
+EklorSyncAboutPage=Informazioni sul modulo EklorSync
+EklorSyncAboutGeneral=Informazioni generali
+EklorSyncAboutVersion=Versione
+EklorSyncAboutFamily=Famiglia
+EklorSyncAboutDescription=Descrizione
+EklorSyncAboutMaintainer=Manutentore
+EklorSyncAboutResources=Risorse
+EklorSyncAboutDocumentation=Documentazione
+EklorSyncAboutSupport=Supporto
+EklorSyncAboutContact=Contatto
+EklorSyncAbout=Informazioni su EklorSync
+EklorSyncAboutDocumentationLink=Leggere il file README
+EklorSyncAboutSupportValue=Contattare il proprio integratore per il supporto.
 
-PowrSyncVisibleColumns=Colonne visibili
-PowrSyncRecordsPerPage=Record per pagina
-PowrSyncSyncAllProducts=Sincronizza tutti i prodotti
+EklorSyncVisibleColumns=Colonne visibili
+EklorSyncRecordsPerPage=Record per pagina
+EklorSyncSyncAllProducts=Sincronizza tutti i prodotti

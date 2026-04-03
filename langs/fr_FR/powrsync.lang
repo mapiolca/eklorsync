@@ -1,73 +1,73 @@
-# Module PowrSync - Traductions françaises
+# Module EklorSync - Traductions françaises
 
-PowrSyncSetup=Configuration EKLOR
-PowrConnectCredentials=Identifiants de connexion
-PowrConnectEmail=Email EKLOR
-PowrConnectEmailHelp=Votre email de connexion au webshop EKLOR.shop
-PowrConnectPassword=Mot de passe EKLOR
-PowrConnectPasswordHelp=Laisser vide pour conserver le mot de passe actuel
-PowrConnectMapping=Association fournisseur
-PowrConnectSupplier=Fournisseur Dolibarr
-PowrConnectSupplierHelp=Sélectionner la fiche fournisseur EKLOR dans Dolibarr
-PowrSyncAdvanced=Paramètres avancés
-PowrSyncDelay=Délai entre requêtes
-PowrSyncDelayHelp=Temps d'attente entre chaque produit (500ms minimum pour ne pas surcharger le site)
-PowrSyncDefaultVatRate=Taux TVA par défaut
-PowrSyncDefaultVatRateHelp=Taux de TVA HT appliqué lors de chaque mise à jour de prix d'achat fournisseur.
-PowrSyncDefaultVatRateRequired=Le paramètre "Taux TVA par défaut" est obligatoire. Veuillez le renseigner dans la configuration PowrSync.
-PowrSyncConfigOk=Connecté avec le compte %s
+EklorSyncSetup=Configuration EKLOR
+EklorConnectCredentials=Identifiants de connexion
+EklorConnectEmail=Email EKLOR
+EklorConnectEmailHelp=Votre email de connexion au webshop EKLOR.shop
+EklorConnectPassword=Mot de passe EKLOR
+EklorConnectPasswordHelp=Laisser vide pour conserver le mot de passe actuel
+EklorConnectMapping=Association fournisseur
+EklorConnectSupplier=Fournisseur Dolibarr
+EklorConnectSupplierHelp=Sélectionner la fiche fournisseur EKLOR dans Dolibarr
+EklorSyncAdvanced=Paramètres avancés
+EklorSyncDelay=Délai entre requêtes
+EklorSyncDelayHelp=Temps d'attente entre chaque produit (500ms minimum pour ne pas surcharger le site)
+EklorSyncDefaultVatRate=Taux TVA par défaut
+EklorSyncDefaultVatRateHelp=Taux de TVA HT appliqué lors de chaque mise à jour de prix d'achat fournisseur.
+EklorSyncDefaultVatRateRequired=Le paramètre "Taux TVA par défaut" est obligatoire. Veuillez le renseigner dans la configuration EklorSync.
+EklorSyncConfigOk=Connecté avec le compte %s
 
-PowrSyncTestConnection=Test de connexion
-PowrSyncTestUrl=URL produit de test
-PowrSyncTestUrlHelp=Collez l'URL d'un produit sur EKLOR.shop pour vérifier la connexion et la lecture du prix
-PowrSyncTestButton=Tester la connexion
+EklorSyncTestConnection=Test de connexion
+EklorSyncTestUrl=URL produit de test
+EklorSyncTestUrlHelp=Collez l'URL d'un produit sur EKLOR.shop pour vérifier la connexion et la lecture du prix
+EklorSyncTestButton=Tester la connexion
 
-PowrSyncTitle=Synchronisation prix EKLOR
-PowrSyncNotConfigured=Le module EKLOR n'est pas encore configuré.
+EklorSyncTitle=Synchronisation prix EKLOR
+EklorSyncNotConfigured=Le module EKLOR n'est pas encore configuré.
 GoToSetup=Accéder à la configuration
 SyncAllPrices=Synchroniser tous les prix
-PowrSyncConfirmAll=Vous allez lancer la synchronisation de tous les prix fournisseur EKLOR. Cette opération peut prendre plusieurs minutes. Continuer ?
-PowrSyncDone=%s produit(s) traité(s)
-PowrSyncUpdated=Prix mis à jour pour %s (réf. %s)
-PowrSyncUpToDate=Prix déjà à jour pour %s
-PowrSyncNoProducts=Aucun produit avec une référence fournisseur EKLOR trouvé.
-PowrSyncProductCount=%s produit(s) avec référence EKLOR
-PowrSyncProductNotFound=Produit introuvable dans la liste EKLOR
-PowrSyncDbError=Erreur base de données
+EklorSyncConfirmAll=Vous allez lancer la synchronisation de tous les prix fournisseur EKLOR. Cette opération peut prendre plusieurs minutes. Continuer ?
+EklorSyncDone=%s produit(s) traité(s)
+EklorSyncUpdated=Prix mis à jour pour %s (réf. %s)
+EklorSyncUpToDate=Prix déjà à jour pour %s
+EklorSyncNoProducts=Aucun produit avec une référence fournisseur EKLOR trouvé.
+EklorSyncProductCount=%s produit(s) avec référence EKLOR
+EklorSyncProductNotFound=Produit introuvable dans la liste EKLOR
+EklorSyncDbError=Erreur base de données
 
-PowrRef=Réf. EKLOR
+EklorRef=Réf. EKLOR
 CurrentBuyPrice=Prix achat actuel
 LastSyncPrice=Dernier prix scrapé
 LastSync=Dernière synchro
 Sync=Synchroniser
 Never=Jamais
 
-PowrSyncLog=Historique des synchronisations
+EklorSyncLog=Historique des synchronisations
 OldPrice=Ancien prix
 NewPrice=Nouveau prix
 Variation=Variation
 
-PowrLogUpdated=Mis à jour
-PowrLogUpToDate=À jour
-PowrLogError=Erreur
+EklorLogUpdated=Mis à jour
+EklorLogUpToDate=À jour
+EklorLogError=Erreur
 
-PowrSyncSupplierUrlLabel=URL produit fournisseur
-PowrSyncSupplierUrlTooltip=Saisir l'URL menant à la fiche produit du shop fournisseur
+EklorSyncSupplierUrlLabel=URL produit fournisseur
+EklorSyncSupplierUrlTooltip=Saisir l'URL menant à la fiche produit du shop fournisseur
 
-PowrSyncAboutPage=Informations sur le module PowrSync
-PowrSyncAboutGeneral=Informations générales
-PowrSyncAboutVersion=Version
-PowrSyncAboutFamily=Famille
-PowrSyncAboutDescription=Description
-PowrSyncAboutMaintainer=Mainteneur
-PowrSyncAboutResources=Ressources
-PowrSyncAboutDocumentation=Documentation
-PowrSyncAboutSupport=Support
-PowrSyncAboutContact=Contact
-PowrSyncAbout=À propos de PowrSync
-PowrSyncAboutDocumentationLink=Lire le fichier README
-PowrSyncAboutSupportValue=Contactez votre intégrateur pour le support.
+EklorSyncAboutPage=Informations sur le module EklorSync
+EklorSyncAboutGeneral=Informations générales
+EklorSyncAboutVersion=Version
+EklorSyncAboutFamily=Famille
+EklorSyncAboutDescription=Description
+EklorSyncAboutMaintainer=Mainteneur
+EklorSyncAboutResources=Ressources
+EklorSyncAboutDocumentation=Documentation
+EklorSyncAboutSupport=Support
+EklorSyncAboutContact=Contact
+EklorSyncAbout=À propos de EklorSync
+EklorSyncAboutDocumentationLink=Lire le fichier README
+EklorSyncAboutSupportValue=Contactez votre intégrateur pour le support.
 
-PowrSyncVisibleColumns=Colonnes visibles
-PowrSyncRecordsPerPage=Enregistrements par page
-PowrSyncSyncAllProducts=Synchroniser tous les produits
+EklorSyncVisibleColumns=Colonnes visibles
+EklorSyncRecordsPerPage=Enregistrements par page
+EklorSyncSyncAllProducts=Synchroniser tous les produits

@@ -1,5 +1,5 @@
 <?php
-/* Copyright (C) 2024 - Module PowrSync
+/* Copyright (C) 2024 - Module EklorSync
  * Page de configuration
  */
 
@@ -38,11 +38,11 @@ require_once DOL_DOCUMENT_ROOT.'/core/lib/admin.lib.php';
 require_once DOL_DOCUMENT_ROOT.'/core/lib/files.lib.php';
 require_once DOL_DOCUMENT_ROOT.'/core/lib/pdf.lib.php';
 require_once DOL_DOCUMENT_ROOT.'/core/class/html.form.class.php';
-require_once '../lib/powrsync.lib.php';
+require_once '../lib/eklorsync.lib.php';
 require_once DOL_DOCUMENT_ROOT.'/cron/class/cronjob.class.php';
 require_once DOL_DOCUMENT_ROOT.'/societe/class/societe.class.php';
 
-$langs->loadLangs(array('admin', 'eklorsync@powrsync'));
+$langs->loadLangs(array('admin', 'eklorsync@eklorsync'));
 
 if (!$user->admin) {
 	accessforbidden();
@@ -55,9 +55,9 @@ $action = GETPOST('action', 'aZ09');
 // =========================================================================
 
 if ($action == 'testconnect') {
-	$testUrl = GETPOST('POWRSYNC_TEST_URL', 'alpha');
-	$login   = getDolGlobalString('POWRSYNC_LOGIN');
-	$passEnc = getDolGlobalString('POWRSYNC_PASSWORD');
+	$testUrl = GETPOST('EKLORSYNC_TEST_URL', 'alpha');
+	$login   = getDolGlobalString('EKLORSYNC_LOGIN');
+	$passEnc = getDolGlobalString('EKLORSYNC_PASSWORD');
 
 	if (empty($login) || empty($passEnc)) {
 		setEventMessages('Veuillez d\'abord enregistrer vos identifiants avant de tester.', null, 'errors');
@@ -65,7 +65,7 @@ if ($action == 'testconnect') {
 		setEventMessages('Veuillez saisir une URL de produit valide pour le test.', null, 'errors');
 	} else {
 		require_once __DIR__.'/../class/eklorscraper.class.php';
-		$tempDir = !empty($conf->powrsync->dir_temp) ? $conf->powrsync->dir_temp : sys_get_temp_dir();
+		$tempDir = !empty($conf->eklorsync->dir_temp) ? $conf->eklorsync->dir_temp : sys_get_temp_dir();
 		$scraper = new EklorScraper($tempDir);
 
 		$password = dol_decode($passEnc);
@@ -88,11 +88,11 @@ if ($action == 'testconnect') {
 }
 
 if ($action == 'update') {
-	$login       = GETPOST('POWRSYNC_LOGIN', 'email');
-	$password    = GETPOST('POWRSYNC_PASSWORD', 'password');
-	$supplierId  = GETPOST('POWRSYNC_SUPPLIER_ID', 'int');
-	$delayMs     = GETPOST('POWRSYNC_DELAY_MS', 'int');
-	$defaultVatRateRaw = GETPOST('POWRSYNC_DEFAULT_VAT_RATE', 'alphanohtml');
+	$login       = GETPOST('EKLORSYNC_LOGIN', 'email');
+	$password    = GETPOST('EKLORSYNC_PASSWORD', 'password');
+	$supplierId  = GETPOST('EKLORSYNC_SUPPLIER_ID', 'int');
+	$delayMs     = GETPOST('EKLORSYNC_DELAY_MS', 'int');
+	$defaultVatRateRaw = GETPOST('EKLORSYNC_DEFAULT_VAT_RATE', 'alphanohtml');
 	$defaultVatRate = price2num($defaultVatRateRaw);
 	if ($defaultVatRate < 0) {
 		$defaultVatRate = 0;
@@ -101,16 +101,16 @@ if ($action == 'update') {
 		$defaultVatRate = 100;
 	}
 
-	dolibarr_set_const($db, 'POWRSYNC_LOGIN', $login, 'chaine', 0, '', $conf->entity);
+	dolibarr_set_const($db, 'EKLORSYNC_LOGIN', $login, 'chaine', 0, '', $conf->entity);
 
 	// Ne mettre à jour le mot de passe que s'il est saisi (évite d'effacer par erreur)
 	if (!empty($password)) {
-		dolibarr_set_const($db, 'POWRSYNC_PASSWORD', dol_encode($password), 'chaine', 0, '', $conf->entity);
+		dolibarr_set_const($db, 'EKLORSYNC_PASSWORD', dol_encode($password), 'chaine', 0, '', $conf->entity);
 	}
 
-	dolibarr_set_const($db, 'POWRSYNC_SUPPLIER_ID', (int) $supplierId, 'chaine', 0, '', $conf->entity);
-	dolibarr_set_const($db, 'POWRSYNC_DELAY_MS', max(500, (int) $delayMs), 'chaine', 0, '', $conf->entity);
-	dolibarr_set_const($db, 'POWRSYNC_DEFAULT_VAT_RATE', (string) $defaultVatRate, 'chaine', 0, '', $conf->entity);
+	dolibarr_set_const($db, 'EKLORSYNC_SUPPLIER_ID', (int) $supplierId, 'chaine', 0, '', $conf->entity);
+	dolibarr_set_const($db, 'EKLORSYNC_DELAY_MS', max(500, (int) $delayMs), 'chaine', 0, '', $conf->entity);
+	dolibarr_set_const($db, 'EKLORSYNC_DEFAULT_VAT_RATE', (string) $defaultVatRate, 'chaine', 0, '', $conf->entity);
 
 	setEventMessages($langs->trans('SetupSaved'), null, 'mesgs');
 	header('Location: '.$_SERVER['PHP_SELF']);
@@ -120,7 +120,7 @@ if ($action == 'update') {
 // =========================================================================
 // VUE
 // =========================================================================
-$title = $langs->trans('ModuleSetup', 'PowrSync');
+$title = $langs->trans('ModuleSetup', 'EklorSync');
 $helpurl = '';
 
 llxHeader('', $title, $helpurl, '', 0, 0, '', '', '', 'mod-timesheetweek page-admin');
@@ -130,8 +130,8 @@ $linkback = '<a href="'.($backtopage ? $backtopage : DOL_URL_ROOT.'/admin/module
 print load_fiche_titre($langs->trans($title), $linkback, 'title_setup');
 
 // Configuration header
-$head = powrsyncAdminPrepareHead();
-print dol_get_fiche_head($head, 'settings', $langs->trans($title), -1, 'eklorsync@powrsync');
+$head = eklorsyncAdminPrepareHead();
+print dol_get_fiche_head($head, 'settings', $langs->trans($title), -1, 'eklorsync@eklorsync');
 
 // Récupérer la liste des fournisseurs pour le select
 $sql = "SELECT s.rowid, s.nom FROM ".MAIN_DB_PREFIX."societe s";
@@ -145,11 +145,11 @@ if ($resql) {
 	}
 }
 
-$currentLogin      = getDolGlobalString('POWRSYNC_LOGIN');
-$currentSupplierId = getDolGlobalInt('POWRSYNC_SUPPLIER_ID');
-$currentDelayMs    = getDolGlobalInt('POWRSYNC_DELAY_MS') ?: 1000;
-$currentDefaultVatRate = getDolGlobalString('POWRSYNC_DEFAULT_VAT_RATE');
-$hasPassword       = !empty(getDolGlobalString('POWRSYNC_PASSWORD'));
+$currentLogin      = getDolGlobalString('EKLORSYNC_LOGIN');
+$currentSupplierId = getDolGlobalInt('EKLORSYNC_SUPPLIER_ID');
+$currentDelayMs    = getDolGlobalInt('EKLORSYNC_DELAY_MS') ?: 1000;
+$currentDefaultVatRate = getDolGlobalString('EKLORSYNC_DEFAULT_VAT_RATE');
+$hasPassword       = !empty(getDolGlobalString('EKLORSYNC_PASSWORD'));
 
 print '<form method="POST" action="'.$_SERVER['PHP_SELF'].'">';
 print '<input type="hidden" name="token" value="'.newToken().'">';
@@ -159,36 +159,36 @@ print dol_get_fiche_head(array(), '', '', -1);
 
 print '<table class="noborder centpercent">';
 print '<tr class="liste_titre">';
-print '<td colspan="3">'.$langs->trans('PowrConnectCredentials').'</td>';
+print '<td colspan="3">'.$langs->trans('EklorConnectCredentials').'</td>';
 print '</tr>';
 
 // Email
 print '<tr class="oddeven">';
-print '<td class="titlefield">'.$langs->trans('PowrConnectEmail').'<span class="fieldrequired"> *</span></td>';
+print '<td class="titlefield">'.$langs->trans('EklorConnectEmail').'<span class="fieldrequired"> *</span></td>';
 print '<td>';
-print '<input type="email" name="POWRSYNC_LOGIN" class="minwidth300" value="'.dol_escape_htmltag($currentLogin).'" autocomplete="off">';
+print '<input type="email" name="EKLORSYNC_LOGIN" class="minwidth300" value="'.dol_escape_htmltag($currentLogin).'" autocomplete="off">';
 print '</td>';
-print '<td class="opacitymedium">'.$langs->trans('PowrConnectEmailHelp').'</td>';
+print '<td class="opacitymedium">'.$langs->trans('EklorConnectEmailHelp').'</td>';
 print '</tr>';
 
 // Mot de passe
 print '<tr class="oddeven">';
-print '<td>'.$langs->trans('PowrConnectPassword').'<span class="fieldrequired"> *</span></td>';
+print '<td>'.$langs->trans('EklorConnectPassword').'<span class="fieldrequired"> *</span></td>';
 print '<td>';
-print '<input type="password" name="POWRSYNC_PASSWORD" class="minwidth300" value="" autocomplete="new-password" placeholder="'.($hasPassword ? '(mot de passe enregistré - laisser vide pour ne pas changer)' : '').'">';
+print '<input type="password" name="EKLORSYNC_PASSWORD" class="minwidth300" value="" autocomplete="new-password" placeholder="'.($hasPassword ? '(mot de passe enregistré - laisser vide pour ne pas changer)' : '').'">';
 print '</td>';
-print '<td class="opacitymedium">'.$langs->trans('PowrConnectPasswordHelp').'</td>';
+print '<td class="opacitymedium">'.$langs->trans('EklorConnectPasswordHelp').'</td>';
 print '</tr>';
 
 print '<tr class="liste_titre">';
-print '<td colspan="3">'.$langs->trans('PowrConnectMapping').'</td>';
+print '<td colspan="3">'.$langs->trans('EklorConnectMapping').'</td>';
 print '</tr>';
 
 // Fournisseur Dolibarr correspondant à EKLOR
 print '<tr class="oddeven">';
-print '<td>'.$langs->trans('PowrConnectSupplier').'<span class="fieldrequired"> *</span></td>';
+print '<td>'.$langs->trans('EklorConnectSupplier').'<span class="fieldrequired"> *</span></td>';
 print '<td>';
-print '<select name="POWRSYNC_SUPPLIER_ID" class="minwidth300">';
+print '<select name="EKLORSYNC_SUPPLIER_ID" class="minwidth300">';
 print '<option value="0">-- '.$langs->trans('SelectSupplier').' --</option>';
 foreach ($suppliers as $id => $nom) {
 	$sel = ($id == $currentSupplierId) ? ' selected' : '';
@@ -196,28 +196,28 @@ foreach ($suppliers as $id => $nom) {
 }
 print '</select>';
 print '</td>';
-print '<td class="opacitymedium">'.$langs->trans('PowrConnectSupplierHelp').'</td>';
+print '<td class="opacitymedium">'.$langs->trans('EklorConnectSupplierHelp').'</td>';
 print '</tr>';
 
 print '<tr class="liste_titre">';
-print '<td colspan="3">'.$langs->trans('PowrSyncAdvanced').'</td>';
+print '<td colspan="3">'.$langs->trans('EklorSyncAdvanced').'</td>';
 print '</tr>';
 
 // Délai entre requêtes
 print '<tr class="oddeven">';
-print '<td>'.$langs->trans('PowrSyncDelay').'</td>';
+print '<td>'.$langs->trans('EklorSyncDelay').'</td>';
 print '<td>';
-print '<input type="number" name="POWRSYNC_DELAY_MS" value="'.((int) $currentDelayMs).'" min="500" max="10000" step="100"> ms';
+print '<input type="number" name="EKLORSYNC_DELAY_MS" value="'.((int) $currentDelayMs).'" min="500" max="10000" step="100"> ms';
 print '</td>';
-print '<td class="opacitymedium">'.$langs->trans('PowrSyncDelayHelp').'</td>';
+print '<td class="opacitymedium">'.$langs->trans('EklorSyncDelayHelp').'</td>';
 print '</tr>';
 
 print '<tr class="oddeven">';
-print '<td>'.$langs->trans('PowrSyncDefaultVatRate').'</td>';
+print '<td>'.$langs->trans('EklorSyncDefaultVatRate').'</td>';
 print '<td>';
-print '<input type="number" name="POWRSYNC_DEFAULT_VAT_RATE" value="'.dol_escape_htmltag($currentDefaultVatRate).'" min="0" max="100" step="0.01"> %';
+print '<input type="number" name="EKLORSYNC_DEFAULT_VAT_RATE" value="'.dol_escape_htmltag($currentDefaultVatRate).'" min="0" max="100" step="0.01"> %';
 print '</td>';
-print '<td class="opacitymedium">'.$langs->trans('PowrSyncDefaultVatRateHelp').'</td>';
+print '<td class="opacitymedium">'.$langs->trans('EklorSyncDefaultVatRateHelp').'</td>';
 print '</tr>';
 
 print '</table>';
@@ -238,21 +238,21 @@ if ($hasPassword && !empty($currentLogin)) {
 
 	print '<table class="noborder centpercent">';
 	print '<tr class="liste_titre">';
-	print '<td colspan="3">'.$langs->trans('PowrSyncTestConnection').'</td>';
+	print '<td colspan="3">'.$langs->trans('EklorSyncTestConnection').'</td>';
 	print '</tr>';
 
 	print '<tr class="oddeven">';
-	print '<td class="titlefield">'.$langs->trans('PowrSyncTestUrl').'</td>';
+	print '<td class="titlefield">'.$langs->trans('EklorSyncTestUrl').'</td>';
 	print '<td>';
-	print '<input type="url" name="POWRSYNC_TEST_URL" class="minwidth400" value="'.dol_escape_htmltag(GETPOST('POWRSYNC_TEST_URL', 'alpha')).'" placeholder="https://EKLOR.shop/produit/...">';
+	print '<input type="url" name="EKLORSYNC_TEST_URL" class="minwidth400" value="'.dol_escape_htmltag(GETPOST('EKLORSYNC_TEST_URL', 'alpha')).'" placeholder="https://EKLOR.shop/produit/...">';
 	print '</td>';
-	print '<td class="opacitymedium">'.$langs->trans('PowrSyncTestUrlHelp').'</td>';
+	print '<td class="opacitymedium">'.$langs->trans('EklorSyncTestUrlHelp').'</td>';
 	print '</tr>';
 
 	print '</table>';
 
 	print '<div class="center" style="margin-top: 8px;">';
-	print '<input type="submit" class="button" value="'.$langs->trans('PowrSyncTestButton').'">';
+	print '<input type="submit" class="button" value="'.$langs->trans('EklorSyncTestButton').'">';
 	print '</div>';
 
 	print '</form>';
@@ -263,7 +263,7 @@ if ($currentSupplierId > 0 && !empty($currentLogin)) {
 	print '<br>';
 	print '<div class="info">';
 	print img_picto('', 'info', 'class="pictofixedwidth"');
-	print ' '.$langs->trans('PowrSyncConfigOk', $currentLogin);
+	print ' '.$langs->trans('EklorSyncConfigOk', $currentLogin);
 	print '</div>';
 }
 

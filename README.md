@@ -1,10 +1,10 @@
-# Module PowrSync — Dolibarr
+# Module EklorSync — Dolibarr
 
 Synchronisation automatique des prix d'achat EKLOR dans Dolibarr.
 
 ## Installation
 
-1. Copier le dossier `powrsync/` dans `htdocs/custom/` de votre Dolibarr
+1. Copier le dossier `eklorsync/` dans `htdocs/custom/` de votre Dolibarr
 2. Activer le module dans **Configuration → Modules**
 3. Configurer le module : **Produits → EKLOR - Prix → (menu admin)**
 
@@ -73,7 +73,7 @@ Activer via : Configuration → Tâches planifiées.
 ## Structure des fichiers
 
 ```
-powrsync/
+eklorsync/
 ├── admin/setup.php                       ← Réglages
 ├── admin/about.php                       ← À propos
 ├── core/modules/modEklorSync.class.php    ← Descripteur module

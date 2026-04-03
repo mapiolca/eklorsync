@@ -16,9 +16,9 @@
  */
 
 /**
- * \file    powrsync/lib/powrsync.lib.php
- * \ingroup powrsync
- * \brief   Library files with common functions for powrsync
+ * \file    eklorsync/lib/eklorsync.lib.php
+ * \ingroup eklorsync
+ * \brief   Library files with common functions for eklorsync
  */
 
 /**
@@ -26,7 +26,7 @@
  *
  * @return array<array{string,string,string}>
  */
-function powrsyncAdminPrepareHead()
+function eklorsyncAdminPrepareHead()
 {
 	global $langs, $conf;
 
@@ -34,18 +34,18 @@ function powrsyncAdminPrepareHead()
 	// $extrafields = new ExtraFields($db);
 	// $extrafields->fetch_name_optionals_label('myobject');
 
-	$langs->load("eklorsync@powrsync");
+	$langs->load("eklorsync@eklorsync");
 
 	$h = 0;
 	$head = array();
 
-	$head[$h][0] = dol_buildpath("/powrsync/admin/setup.php", 1);
+	$head[$h][0] = dol_buildpath("/eklorsync/admin/setup.php", 1);
 	$head[$h][1] = $langs->trans("Settings");
 	$head[$h][2] = 'settings';
 	$h++;
 
 	/*
-	$head[$h][0] = dol_buildpath("/powrsync/admin/myobject_extrafields.php", 1);
+	$head[$h][0] = dol_buildpath("/eklorsync/admin/myobject_extrafields.php", 1);
 	$head[$h][1] = $langs->trans("ExtraFields");
 	$nbExtrafields = (isset($extrafields->attributes['myobject']['label']) && is_countable($extrafields->attributes['myobject']['label'])) ? count($extrafields->attributes['myobject']['label']) : 0;
 	if ($nbExtrafields > 0) {
@@ -54,7 +54,7 @@ function powrsyncAdminPrepareHead()
 	$head[$h][2] = 'myobject_extrafields';
 	$h++;
 
-	$head[$h][0] = dol_buildpath("/powrsync/admin/myobjectline_extrafields.php", 1);
+	$head[$h][0] = dol_buildpath("/eklorsync/admin/myobjectline_extrafields.php", 1);
 	$head[$h][1] = $langs->trans("ExtraFieldsLines");
 	$nbExtrafields = (isset($extrafields->attributes['myobjectline']['label']) && is_countable($extrafields->attributes['myobjectline']['label'])) ? count($extrafields->attributes['myobject']['label']) : 0;
 	if ($nbExtrafields > 0) {
@@ -64,7 +64,7 @@ function powrsyncAdminPrepareHead()
 	$h++;
 	*/
 
-	$head[$h][0] = dol_buildpath("/powrsync/admin/about.php", 1);
+	$head[$h][0] = dol_buildpath("/eklorsync/admin/about.php", 1);
 	$head[$h][1] = $langs->trans("About");
 	$head[$h][2] = 'about';
 	$h++;
@@ -72,14 +72,14 @@ function powrsyncAdminPrepareHead()
 	// Show more tabs from modules
 	// Entries must be declared in modules descriptor with line
 	//$this->tabs = array(
-	//	'entity:+tabname:Title:@powrsync:/powrsync/mypage.php?id=__ID__'
+	//	'entity:+tabname:Title:@eklorsync:/eklorsync/mypage.php?id=__ID__'
 	//); // to add new tab
 	//$this->tabs = array(
-	//	'entity:-tabname:Title:@powrsync:/powrsync/mypage.php?id=__ID__'
+	//	'entity:-tabname:Title:@eklorsync:/eklorsync/mypage.php?id=__ID__'
 	//); // to remove a tab
-	complete_head_from_modules($conf, $langs, null, $head, $h, 'eklorsync@powrsync');
+	complete_head_from_modules($conf, $langs, null, $head, $h, 'eklorsync@eklorsync');
 
-	complete_head_from_modules($conf, $langs, null, $head, $h, 'eklorsync@powrsync', 'remove');
+	complete_head_from_modules($conf, $langs, null, $head, $h, 'eklorsync@eklorsync', 'remove');
 
 	return $head;
 }
