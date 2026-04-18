@@ -21,6 +21,8 @@ class EklorScraper
 	private $userAgent    = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/120.0.0.0 Safari/537.36';
 	private $lastCsrfRaw  = '';
 	private $loginState   = 'none';
+	private $wcApiKey     = '';
+	private $wcApiSecret  = '';
 
 	public $error = '';
 
@@ -39,6 +41,18 @@ class EklorScraper
 	public function __construct($tempDir = '/tmp')
 	{
 		$this->cookieFile = $tempDir.'/eklorsync_'.md5(__FILE__).'.txt';
+	}
+
+	/**
+	 * Configure les clés API WooCommerce REST (Consumer Key + Secret).
+	 * Si renseignées, le login et la récupération de prix passent par l'API REST
+	 * au lieu du scraping HTML — contourne le reCAPTCHA et Tiger Protect.
+	 * Créer les clés dans : WooCommerce → Réglages → Avancé → REST API (lecture seule).
+	 */
+	public function setWooCommerceApiCredentials($key, $secret)
+	{
+		$this->wcApiKey    = $key;
+		$this->wcApiSecret = $secret;
 	}
 
 	private function initCurl()
@@ -61,7 +75,7 @@ class EklorScraper
 
 	/**
 	 * Vérifie si une session active existe déjà via le cookie jar.
-	 * Tente de charger une page et vérifie qu'on n'est pas redirigé vers /connexion.
+	 * Tente de charger la page profil WooCommerce et vérifie qu'on n'est pas redirigé vers la page login.
 	 */
 	public function isSessionActive()
 	{
@@ -72,23 +86,23 @@ class EklorScraper
 			return false;
 		}
 
-		// Vérifier que le cookie __session existe et n'est pas vide/expiré
+		// Vérifier qu'un cookie WordPress de session existe
 		$cookies = file_get_contents($this->cookieFile);
-		if (strpos($cookies, '__session') === false) {
-			$this->debug('Cookie __session absent du fichier — session inactive');
+		if (strpos($cookies, 'wordpress_logged_in_') === false) {
+			$this->debug('Cookie wordpress_logged_in_ absent du fichier — session inactive');
 			return false;
 		}
-		$this->debug('Cookie __session trouvé, test GET sur le site...');
+		$this->debug('Cookie wordpress_logged_in_ trouvé, test GET sur le site...');
 
 		$this->initCurl();
-		// Désactiver le suivi de redirection pour détecter un 302 vers /connexion
+		// Désactiver le suivi de redirection pour détecter un 302 vers la page login
 		curl_setopt($this->ch, CURLOPT_FOLLOWLOCATION, false);
-		curl_setopt($this->ch, CURLOPT_URL, $this->baseUrl.'/account/profile');
+		curl_setopt($this->ch, CURLOPT_URL, $this->baseUrl.'/mon-compte/profil/');
 		curl_setopt($this->ch, CURLOPT_HTTPGET, true);
 
 		curl_exec($this->ch);
 		$httpCode = curl_getinfo($this->ch, CURLINFO_HTTP_CODE);
-		$this->debug('GET /account/profile → HTTP '.$httpCode);
+		$this->debug('GET /mon-compte/profil/ → HTTP '.$httpCode);
 
 		// Restaurer le suivi de redirection
 		curl_setopt($this->ch, CURLOPT_FOLLOWLOCATION, true);
@@ -105,14 +119,21 @@ class EklorScraper
 	}
 
 	/**
-	 * Authentification via l'endpoint Remix de /connexion
-	 * Le CSRF est géré par cookie (posé par le GET, renvoyé automatiquement par le POST).
+	 * Authentification WooCommerce.
+	 * Si des clés API REST sont configurées (setWooCommerceApiCredentials), les valide
+	 * via /wp-json/wc/v3/ — pas de formulaire, pas de reCAPTCHA, pas de Tiger Protect.
+	 * Sinon, tente le login HTML via /wp-login.php.
 	 * Retourne 1 si succès, -1 si échec
 	 */
 	public function login($email, $password)
 	{
 		$this->debug('login() — début, user='.$email);
 		$this->loginState = 'none';
+
+		// Mode API REST : pas besoin de cookie, on valide les clés directement
+		if (!empty($this->wcApiKey) && !empty($this->wcApiSecret)) {
+			return $this->loginViaRestApi();
+		}
 
 		// Vérifie si on est déjà connecté via les cookies existants
 		if ($this->isSessionActive()) {
@@ -122,95 +143,64 @@ class EklorScraper
 
 		$this->initCurl();
 
-		// Étape 1 : GET /connexion pour récupérer le cookie csrf + __session initiale
-		$loginUrl = $this->baseUrl.'/connexion';
-		$this->debug('GET '.$loginUrl.' (pour cookies csrf + __session)');
-		curl_setopt($this->ch, CURLOPT_URL, $loginUrl);
+		// Étape 1 : GET /wp-login.php pour poser le cookie wordpress_test_cookie
+		$wpLoginUrl = $this->baseUrl.'/wp-login.php';
+		$this->debug('GET '.$wpLoginUrl.' (pour poser le test cookie WordPress)');
+		curl_setopt($this->ch, CURLOPT_URL, $wpLoginUrl);
 		curl_setopt($this->ch, CURLOPT_HTTPGET, true);
-		$html = curl_exec($this->ch);
+		curl_setopt($this->ch, CURLOPT_ENCODING, '');
+		curl_setopt($this->ch, CURLOPT_HTTPHEADER, array(
+			'Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8',
+			'Accept-Language: fr-FR,fr;q=0.9,en-US;q=0.8,en;q=0.7',
+			'Accept-Encoding: gzip, deflate, br',
+			'Upgrade-Insecure-Requests: 1',
+			'Sec-Fetch-Dest: document',
+			'Sec-Fetch-Mode: navigate',
+			'Sec-Fetch-Site: none',
+			'Sec-Fetch-User: ?1',
+		));
+		curl_exec($this->ch);
 
 		if (curl_errno($this->ch)) {
 			$this->error = 'Connexion impossible : '.curl_error($this->ch);
-			$this->debug('ERREUR cURL GET /connexion : '.$this->error);
+			$this->debug('ERREUR cURL GET /wp-login.php : '.$this->error);
 			return -1;
 		}
-		$this->debug('GET /connexion OK, HTML length='.strlen($html).' bytes');
+		$this->debug('GET /wp-login.php OK');
 
-		// Extraire la valeur du cookie csrf depuis le cookie jar
-		// Le CSRF utilise un double-submit pattern : la valeur doit être dans le cookie ET dans le body
-		$csrfValue = $this->extractCsrfFromCookieJar();
-		if (file_exists($this->cookieFile)) {
-			$cookieContent = file_get_contents($this->cookieFile);
-			$hasCsrf = strpos($cookieContent, 'csrf') !== false ? 'oui' : 'non';
-			$hasSession = strpos($cookieContent, '__session') !== false ? 'oui' : 'non';
-			$this->debug('Cookies après GET : csrf='.$hasCsrf.', __session='.$hasSession);
-		}
-		$this->debug('CSRF cookie value : '.($csrfValue ? substr($csrfValue, 0, 30).'…' : '(non trouvé)'));
-
-		// EN: Step 2, discover login form action + hidden fields to avoid hardcoded Remix route.
-		// FR: Étape 2, détecter l'action du formulaire + champs cachés pour éviter une route Remix figée.
-		$formConfig = $this->extractLoginFormConfig($html);
-		$formNotFound = empty($formConfig['action']) && empty($formConfig['hidden']);
-		if ($formNotFound) {
-			// EN: If no login form is present, session may already be authenticated.
-			// FR: Si le formulaire de connexion est absent, la session peut déjà être authentifiée.
-			$this->debug('No login form detected on /connexion, re-check active session before POST login');
-			if ($this->isSessionActive()) {
-				$this->debug('Active session confirmed after /connexion GET, skip login POST');
-				$this->loginState = 'already_connected';
-				return 1;
-			}
-			// EN: If login form is absent, do not force a POST login (can trigger HTTP 500 upstream).
-			// FR: Si le formulaire est absent, ne pas forcer un POST login (peut déclencher un HTTP 500 côté fournisseur).
-			// EN: Continue flow and let product URL access confirm whether session is usable.
-			// FR: Continuer le flux et laisser l'accès URL produit confirmer si la session est exploitable.
-			$this->loggedIn = true;
-			$this->loginState = 'already_connected';
-			$this->debug('No login form and inactive /account/profile check: skip login POST, continue with product URL test');
-			return 1;
-		}
-
-		$postUrl = $formConfig['action'];
-		if (empty($postUrl)) {
-			$postUrl = $this->baseUrl.'/connexion';
-		}
-
-		$postFields = $formConfig['hidden'];
-		if (!is_array($postFields)) {
-			$postFields = array();
-		}
-
-		// EN: Always enforce required credentials fields.
-		// FR: Toujours forcer les champs d'identifiants requis.
-		$postFields['username'] = $email;
-		$postFields['password'] = $password;
-		if (!isset($postFields['stayConnected'])) {
-			$postFields['stayConnected'] = 'on';
-		}
-		if (!isset($postFields['_action']) || $postFields['_action'] === '') {
-			$postFields['_action'] = 'login';
-		}
-
-		// EN: If csrf is absent from form, fallback to cookie-derived value.
-		// FR: Si csrf est absent du formulaire, fallback via la valeur issue du cookie.
-		if (empty($postFields['csrf']) && !empty($csrfValue)) {
-			$postFields['csrf'] = $csrfValue;
-		}
-
+		// Étape 2 : POST /wp-login.php avec les champs natifs WordPress
+		// (pas de reCAPTCHA sur cet endpoint contrairement au formulaire WooCommerce)
 		usleep($this->requestDelay);
-		$this->debug('POST '.$postUrl.' avec username='.$email);
 
-		// Ne pas suivre les redirections pour capturer la réponse 204
+		$postFields = array(
+			'log'         => $email,
+			'pwd'         => $password,
+			'wp-submit'   => 'Se connecter',
+			'redirect_to' => $this->baseUrl.'/mon-compte/',
+			'testcookie'  => '1',
+			'rememberme'  => 'forever',
+		);
+
+		$this->debug('POST '.$wpLoginUrl.' avec log='.$email);
+
 		curl_setopt($this->ch, CURLOPT_FOLLOWLOCATION, false);
 		curl_setopt($this->ch, CURLOPT_HEADER, true);
 		curl_setopt($this->ch, CURLOPT_HTTPHEADER, array(
 			'Content-Type: application/x-www-form-urlencoded',
 			'Origin: '.$this->baseUrl,
-			'Referer: '.$loginUrl,
-			'X-Requested-With: XMLHttpRequest',
+			'Referer: '.$wpLoginUrl,
+			'Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8',
+			'Accept-Language: fr-FR,fr;q=0.9,en-US;q=0.8,en;q=0.7',
+			'Accept-Encoding: gzip, deflate, br',
+			'Upgrade-Insecure-Requests: 1',
+			'Sec-Fetch-Dest: document',
+			'Sec-Fetch-Mode: navigate',
+			'Sec-Fetch-Site: same-origin',
+			'Sec-Fetch-User: ?1',
 		));
+		curl_setopt($this->ch, CURLOPT_ENCODING, ''); // active la décompression gzip/br automatique
 		curl_setopt_array($this->ch, array(
-			CURLOPT_URL        => $postUrl,
+			CURLOPT_URL        => $wpLoginUrl,
 			CURLOPT_POST       => true,
 			CURLOPT_POSTFIELDS => http_build_query($postFields),
 		));
@@ -223,21 +213,6 @@ class EklorScraper
 		$this->debug('POST login → HTTP '.$httpCode);
 		$this->debug('Headers réponse (premières lignes) : '.substr(str_replace("\r\n", ' | ', $headers), 0, 500));
 
-		// EN: Retry once with raw csrf cookie value when server returns HTTP 500.
-		// FR: Refaire 1 tentative avec la valeur brute du cookie csrf si le serveur renvoie HTTP 500.
-		if ($httpCode >= 500 && !empty($this->lastCsrfRaw) && (!isset($postFields['csrf']) || $postFields['csrf'] !== $this->lastCsrfRaw)) {
-			$this->debug('Retry login POST with raw csrf cookie value');
-			$postFields['csrf'] = $this->lastCsrfRaw;
-			usleep($this->requestDelay);
-			curl_setopt($this->ch, CURLOPT_POSTFIELDS, http_build_query($postFields));
-			$response = curl_exec($this->ch);
-			$httpCode = curl_getinfo($this->ch, CURLINFO_HTTP_CODE);
-			$headerSize = curl_getinfo($this->ch, CURLINFO_HEADER_SIZE);
-			$headers = substr($response, 0, $headerSize);
-			$this->debug('POST login retry (csrf raw) → HTTP '.$httpCode);
-			$this->debug('Headers retry (premières lignes) : '.substr(str_replace("\r\n", ' | ', $headers), 0, 500));
-		}
-
 		// Restaurer les options par défaut
 		curl_setopt($this->ch, CURLOPT_FOLLOWLOCATION, true);
 		curl_setopt($this->ch, CURLOPT_HEADER, false);
@@ -249,14 +224,14 @@ class EklorScraper
 			return -1;
 		}
 
-		// Remix renvoie 204 No Content avec x-remix-redirect en cas de succès
-		if ($httpCode === 204 || ($httpCode >= 200 && $httpCode < 400)) {
-			// Vérifier que le cookie __session a été mis à jour avec des données réelles
+		// WordPress renvoie 302 vers redirect_to en cas de succès
+		// Vérifier la présence du cookie wordpress_logged_in_*
+		if ($httpCode === 302 || ($httpCode >= 200 && $httpCode < 400)) {
 			if (file_exists($this->cookieFile)) {
 				$cookieContent = file_get_contents($this->cookieFile);
-				$hasAuth = strpos($cookieContent, 'auth_token_sso') !== false;
-				$this->debug('Cookie auth_token_sso après login : '.($hasAuth ? 'oui' : 'non'));
-				if ($hasAuth || strpos($headers, 'x-remix-redirect') !== false) {
+				$hasAuth = strpos($cookieContent, 'wordpress_logged_in_') !== false;
+				$this->debug('Cookie wordpress_logged_in_ après login : '.($hasAuth ? 'oui' : 'non'));
+				if ($hasAuth) {
 					$this->loggedIn = true;
 					$this->loginState = 'login_ok';
 					$this->debug('Login réussi — session active');
@@ -269,6 +244,48 @@ class EklorScraper
 		$this->loginState = 'login_failed';
 		$this->error = 'Échec login HTTP '.$httpCode.' — vérifier les identifiants';
 		$this->debug('Échec login : HTTP '.$httpCode);
+		return -1;
+	}
+
+	/**
+	 * Valide les clés API WooCommerce REST en appelant /wp-json/wc/v3/products?per_page=1.
+	 * Retourne 1 si les clés sont valides, -1 sinon.
+	 */
+	private function loginViaRestApi()
+	{
+		$this->initCurl();
+		$testUrl = $this->baseUrl.'/wp-json/wc/v3/products?per_page=1';
+		$this->debug('loginViaRestApi() — GET '.$testUrl);
+
+		curl_setopt_array($this->ch, array(
+			CURLOPT_URL            => $testUrl,
+			CURLOPT_HTTPGET        => true,
+			CURLOPT_USERPWD        => $this->wcApiKey.':'.$this->wcApiSecret,
+			CURLOPT_HTTPAUTH       => CURLAUTH_BASIC,
+			CURLOPT_FOLLOWLOCATION => true,
+		));
+
+		$body     = curl_exec($this->ch);
+		$httpCode = curl_getinfo($this->ch, CURLINFO_HTTP_CODE);
+		$this->debug('loginViaRestApi() → HTTP '.$httpCode);
+
+		if (curl_errno($this->ch)) {
+			$this->error = 'REST API connexion impossible : '.curl_error($this->ch);
+			$this->loginState = 'login_failed';
+			return -1;
+		}
+		if ($httpCode === 200) {
+			$this->loggedIn   = true;
+			$this->loginState = 'login_ok';
+			$this->debug('loginViaRestApi() — clés valides');
+			return 1;
+		}
+
+		$json = json_decode($body, true);
+		$msg  = isset($json['message']) ? $json['message'] : 'HTTP '.$httpCode;
+		$this->error      = 'REST API auth échouée : '.$msg;
+		$this->loginState = 'login_failed';
+		$this->debug('loginViaRestApi() — échec : '.$this->error);
 		return -1;
 	}
 
@@ -377,6 +394,11 @@ class EklorScraper
 			return false;
 		}
 
+		// Mode API REST : recherche par SKU, plus fiable que le scraping HTML
+		if (!empty($this->wcApiKey) && !empty($this->wcApiSecret)) {
+			return $this->getPriceViaRestApi($eklorRef);
+		}
+
 		if (empty($url)) {
 			$this->error = 'URL produit non renseignée pour '.$eklorRef;
 			$this->debug('ERREUR : URL manquante');
@@ -406,13 +428,72 @@ class EklorScraper
 			$this->debug('ERREUR 404 pour '.$eklorRef);
 			return false;
 		}
-		if ($httpCode === 302 || strpos($finalUrl, '/connexion') !== false) {
+		if ($httpCode === 302 || strpos($finalUrl, '/mon-compte/profil') !== false) {
 			$this->error = 'Session expirée ou non connecté — redirigé vers '.$finalUrl;
-			$this->debug('ERREUR : redirection vers /connexion, session perdue');
+			$this->debug('ERREUR : redirection vers la page de connexion, session perdue');
 			return false;
 		}
 
 		return $this->parsePrice($html, $eklorRef);
+	}
+
+	/**
+	 * Récupère le prix HT d'un produit via l'API WooCommerce REST (recherche par SKU).
+	 * L'API retourne le prix TTC dans le champ "price" ; on retourne ce float directement.
+	 *
+	 * @param  string $sku  Référence fournisseur (= SKU WooCommerce)
+	 * @return float|false
+	 */
+	private function getPriceViaRestApi($sku)
+	{
+		usleep($this->requestDelay);
+
+		$apiUrl = $this->baseUrl.'/wp-json/wc/v3/products?sku='.urlencode($sku);
+		$this->debug('getPriceViaRestApi() — GET '.$apiUrl);
+
+		curl_setopt_array($this->ch, array(
+			CURLOPT_URL      => $apiUrl,
+			CURLOPT_HTTPGET  => true,
+			CURLOPT_USERPWD  => $this->wcApiKey.':'.$this->wcApiSecret,
+			CURLOPT_HTTPAUTH => CURLAUTH_BASIC,
+		));
+
+		$body     = curl_exec($this->ch);
+		$httpCode = curl_getinfo($this->ch, CURLINFO_HTTP_CODE);
+		$this->debug('getPriceViaRestApi() → HTTP '.$httpCode.' — body length='.strlen($body));
+
+		if (curl_errno($this->ch)) {
+			$this->error = 'REST API cURL erreur ref '.$sku.' : '.curl_error($this->ch);
+			return false;
+		}
+		if ($httpCode === 404) {
+			$this->error = 'Référence '.$sku.' introuvable via REST API (404)';
+			return false;
+		}
+		if ($httpCode !== 200) {
+			$this->error = 'REST API erreur ref '.$sku.' : HTTP '.$httpCode;
+			return false;
+		}
+
+		$products = json_decode($body, true);
+		if (!is_array($products) || empty($products)) {
+			$this->error = 'Référence '.$sku.' introuvable (aucun produit retourné par l\'API)';
+			$this->debug('getPriceViaRestApi() — aucun produit pour SKU='.$sku);
+			return false;
+		}
+
+		$product = $products[0];
+		// "price" = prix courant (promo ou normal), "regular_price" = prix normal
+		$priceStr = isset($product['price']) ? $product['price'] : '';
+		if ($priceStr === '' || $priceStr === null) {
+			$this->error = 'Prix absent dans la réponse API pour '.$sku;
+			$this->debug('getPriceViaRestApi() — champ price vide pour SKU='.$sku);
+			return false;
+		}
+
+		$price = (float) $priceStr;
+		$this->debug('getPriceViaRestApi() — SKU='.$sku.' → price='.$price);
+		return $price > 0 ? $price : false;
 	}
 
 	/**
@@ -494,33 +575,30 @@ class EklorScraper
 	/**
 	 * Parse le prix HT dans le HTML de la fiche produit EKLOR
 	 *
-	 * Le prix se trouve dans un bloc avec la classe "font-semibold leading-none"
-	 * à l'intérieur d'un conteneur "bg-secondary-100" (promo) ou "bg-grey-50" (normal).
-	 * Format typique : <p class="text-[15px] font-semibold leading-none">661,38&nbsp;€</p>
+	 * Nouvelle structure (WooCommerce) :
+	 * <span class="woocommerce-Price-amount amount"><bdi>3 651,89&nbsp;<span class="woocommerce-Price-currencySymbol">€</span></bdi></span>
+	 * Le prix est aussi disponible dans la meta og : <meta property="product:price:amount" content="3651.894925">
+	 * Et dans le JSON-LD @graph : offers[].priceSpecification[].price
 	 */
 	private function parsePrice($html, $eklorRef)
 	{
 		$this->debug('parsePrice() — ref='.$eklorRef.', HTML length='.strlen($html).' bytes');
 
-		// Stratégie 1 : regex directe sur le pattern de prix affiché
-		// Cherche le prix dans le bloc "À l'unité" (premier prix font-semibold leading-none suivi de €)
-		$this->debug('Stratégie 1 : regex font-semibold leading-none + €');
-		if (preg_match_all('/font-semibold leading-none["\'][^>]*>([0-9\s\xc2\xa0.,]+)\s*(?:&nbsp;)?€/u', $html, $matches)) {
-			$this->debug('Regex S1 : '.count($matches[1]).' candidat(s) trouvé(s) : '.implode(' | ', $matches[1]));
-			foreach ($matches[1] as $rawPrice) {
-				$price = $this->cleanPrice($rawPrice.'€');
-				$this->debug('  → cleanPrice("'.trim($rawPrice).'") = '.var_export($price, true));
-				if ($price !== false && $price > 0) {
-					$this->debug('Stratégie 1 réussie : prix='.$price);
-					return $price;
-				}
+		// Stratégie 1 : meta tag product:price:amount (source la plus fiable)
+		$this->debug('Stratégie 1 : meta property="product:price:amount"');
+		if (preg_match('/<meta[^>]+property=["\']product:price:amount["\'][^>]+content=["\']([0-9.]+)["\']/', $html, $m)) {
+			$price = (float) $m[1];
+			$this->debug('Regex S1 : valeur brute="'.$m[1].'"');
+			if ($price > 0) {
+				$this->debug('Stratégie 1 réussie : prix='.$price);
+				return $price;
 			}
 		} else {
-			$this->debug('Stratégie 1 : aucun match (classe CSS absente ou HTML différent)');
+			$this->debug('Stratégie 1 : aucun match');
 		}
 
-		// Stratégie 2 : DOM/XPath fallback
-		$this->debug('Stratégie 2 : DOM/XPath sur font-semibold + leading-none');
+		// Stratégie 2 : DOM/XPath sur la section summary WooCommerce
+		$this->debug('Stratégie 2 : DOM/XPath sur woocommerce-Price-amount dans .entry-summary');
 		libxml_use_internal_errors(true);
 		$dom = new DOMDocument();
 		$dom->loadHTML($html, LIBXML_NOWARNING | LIBXML_NOERROR);
@@ -528,16 +606,22 @@ class EklorScraper
 
 		$xpath = new DOMXPath($dom);
 
-		// Cherche les éléments avec font-semibold et leading-none qui contiennent un prix
-		$priceNodes = $xpath->query('//*[contains(@class,"font-semibold") and contains(@class,"leading-none")]');
+		// Cherche le prix dans la section résumé produit (évite les prix des upsells)
+		$priceNodes = $xpath->query(
+			'//*[contains(@class,"entry-summary")]' .
+			'//*[contains(@class,"woocommerce-Price-amount")]//bdi' .
+			'|' .
+			'//*[contains(@class,"entry-summary")]' .
+			'//*[contains(@class,"woocommerce-Price-amount")]'
+		);
 		$nodeCount = $priceNodes ? $priceNodes->length : 0;
 		$this->debug('XPath S2 : '.$nodeCount.' nœud(s) trouvé(s)');
 		if ($priceNodes) {
 			foreach ($priceNodes as $node) {
 				$text = trim($node->textContent);
 				$this->debug('  nœud texte="'.$text.'"');
-				if (preg_match('/[0-9]/', $text) && mb_strpos($text, '€') !== false) {
-					$price = $this->cleanPrice($text);
+				if (preg_match('/[0-9]/', $text)) {
+					$price = $this->cleanPrice($text.'€');
 					$this->debug('  → cleanPrice = '.var_export($price, true));
 					if ($price !== false && $price > 0) {
 						$this->debug('Stratégie 2 réussie : prix='.$price);
@@ -547,15 +631,47 @@ class EklorScraper
 			}
 		}
 
-		// Stratégie 3 : JSON-LD schema.org (si le prix y est ajouté un jour)
+		// Stratégie 3 : JSON-LD schema.org (format @graph ou direct)
 		$this->debug('Stratégie 3 : JSON-LD schema.org');
 		foreach ($xpath->query('//script[@type="application/ld+json"]') as $script) {
 			$json = json_decode(trim($script->textContent), true);
-			$this->debug('  JSON-LD type='.($json['@type'] ?? '?').' — offers.price='.($json['offers']['price'] ?? 'absent'));
-			if (!empty($json['offers']['price'])) {
-				$price = (float) $json['offers']['price'];
-				$this->debug('Stratégie 3 réussie : prix='.$price);
-				return $price;
+			if (!is_array($json)) {
+				continue;
+			}
+			// Format nouveau : {"@graph": [..., {"@type":"Product", "offers":[...]}]}
+			$nodes = !empty($json['@graph']) ? $json['@graph'] : [$json];
+			foreach ($nodes as $node) {
+				if (($node['@type'] ?? '') !== 'Product') {
+					continue;
+				}
+				$this->debug('  JSON-LD Product trouvé');
+				$offers = $node['offers'] ?? [];
+				// offers peut être un tableau ou un objet
+				if (isset($offers['@type'])) {
+					$offers = [$offers];
+				}
+				foreach ($offers as $offer) {
+					// Format nouveau : priceSpecification[0].price
+					if (!empty($offer['priceSpecification'])) {
+						foreach ((array) $offer['priceSpecification'] as $spec) {
+							if (!empty($spec['price'])) {
+								$price = (float) $spec['price'];
+								if ($price > 0) {
+									$this->debug('Stratégie 3 réussie (priceSpecification) : prix='.$price);
+									return $price;
+								}
+							}
+						}
+					}
+					// Format ancien : offers.price
+					if (!empty($offer['price'])) {
+						$price = (float) $offer['price'];
+						if ($price > 0) {
+							$this->debug('Stratégie 3 réussie (offers.price) : prix='.$price);
+							return $price;
+						}
+					}
+				}
 			}
 		}
 
